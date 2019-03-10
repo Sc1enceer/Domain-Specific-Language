@@ -1,5 +1,5 @@
 {
-  module lexer where
+  module LexerTokens where
 }
 
 %wrapper "posn"
@@ -42,15 +42,15 @@ $white+       ;
   \)                        { tok (\p s -> TokenRParen p) }
   \{                        { tok (\p s -> TokenLBrckt p)}
   \}                        { tok (\p s -> TokenRBrckt p)}
-
   $alpha [$alpha $digit \_ \’]*   { tok (\p s -> TokenVar p s) }
 
 
 -- Helper function
+{
 tok f p s = f p s
 
 -- the token type
-data Token =
+data LexerToken =
   TokenTypeBool       AlexPosn          |
   TokenTypeInt        AlexPosn          |
   TokenInt            AlexPosn Int      |
@@ -60,7 +60,7 @@ data Token =
   TokenEnd            AlexPosn          |
   TokenReadLine       AlexPosn          |
   TokenPrefix         AlexPosn          |
-  TokenStrmArith       AlexPosn          |
+  TokenStrmArith      AlexPosn          |
   TokenCopy           AlexPosn          |
   TokenAccum          AlexPosn          |
   TokenFIB            AlexPosn          |
@@ -77,9 +77,9 @@ data Token =
   TokenLParen         AlexPosn          |
   TokenRParen         AlexPosn          |
   TokenLBrckt         AlexPosn          |
-  TokenRBrckt         AlexPosn          |
+  TokenRBrckt         AlexPosn
   TokenVar            AlexPosn String
-  deriving (Eq, Show)
+  deriving (Eq,Show)
 
   tokenPosn :: Token -> String
   tokenPosn (TokenTypeBool (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
@@ -108,3 +108,4 @@ data Token =
   tokenPosn (TokenLBrckt  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
   tokenPosn (TokenRBrckt  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
   tokenPosn (TokenVar (AlexPn a l c) _) = show(l) ++ ":" ++ show(c)
+}

@@ -1,10 +1,5 @@
-
-// T , U ::= Int | Bool | T ! T
-// E ::= n | true | false | E < E | E + E | x |
-//  | if E then E else E | λ (x : T) E |
-//  | let (x : T) = E in E | E E
 {
-  module ToyTokens where
+module ToyTokens where
 }
 
 %wrapper "posn"
@@ -14,15 +9,15 @@ $alpha = [a-zA-Z]
 -- alphabetic characters
 
 tokens :-
-$white+     ;
+$white+       ;
   "--".*        ;
   Bool           { tok (\p s -> TokenTypeBool p)}
   Int            { tok (\p s -> TokenTypeInt p) }
-  "->"           { tok (\p s -> TokenTypeArr p) }
+  "->"             { tok (\p s -> TokenTypeArr p) }
   $digit+        { tok (\p s -> TokenInt p (read s)) }
   true           { tok (\p s -> TokenTrue p) }
   false          { tok (\p s -> TokenFalse p) }
-  \<             { tok (\p s -> TokenLessThan p) }
+  \<              { tok (\p s -> TokenLessThan p) }
   \+             { tok (\p s -> TokenPlus p) }
   if             { tok (\p s -> TokenIf p) }
   then           { tok (\p s -> TokenThen p) }
@@ -36,11 +31,13 @@ $white+     ;
   \)             { tok (\p s -> TokenRParen p) }
   $alpha [$alpha $digit \_ \’]*   { tok (\p s -> TokenVar p s) }
 
--- Helper function
+{
+-- Each action has type :: AlexPosn -> String -> MDLToken
 
+-- Helper function
 tok f p s = f p s
 
--- The token type
+-- The token type:
 data ToyToken =
   TokenTypeBool AlexPosn         |
   TokenTypeInt  AlexPosn         |
@@ -63,23 +60,25 @@ data ToyToken =
   TokenVar AlexPosn String
   deriving (Eq,Show)
 
-  tokenPosn :: ToyToken -> String
-  tokenPosn (TokenTypeBool (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenTypeInt  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenTypeArr  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenInt  (AlexPn a l c) _) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenTrue  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenFalse  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenLessThan  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenPlus  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenIf (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenThen (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenElse (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenLambda (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenHasType (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenLet (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenEq  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenIn  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenLParen (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenRParen (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenVar (AlexPn a l c) _) = show(l) ++ ":" ++ show(c)
+tokenPosn :: ToyToken -> String
+tokenPosn (TokenTypeBool (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenTypeInt  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenTypeArr  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenInt  (AlexPn a l c) _) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenTrue  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenFalse  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenLessThan  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenPlus  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenIf (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenThen (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenElse (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenLambda (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenHasType (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenLet (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenEq  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenIn  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenLParen (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenRParen (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenVar (AlexPn a l c) _) = show(l) ++ ":" ++ show(c)
+
+}

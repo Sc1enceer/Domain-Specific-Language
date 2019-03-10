@@ -1,10 +1,10 @@
 {
-  module parser where
-  import lexer
+  module ParserGrammar where
+  import LexerTokens
 }
 
 %name parseCalc
-%tokenType {Token}
+%tokenType { LexerToken }
 %error {parseError}
 %token
     Bool          {TokenTypeBool _}
@@ -34,6 +34,7 @@
     ')'           {TokenRParen _}
     '{'           {TokenLBrckt _}
     '}'           {TokenRBrckt _}
+    var           {TokenVar _ $$}
 
 -- define associativity here
 %right let
@@ -46,6 +47,7 @@
 %left '<'
 %left '>'
 
+
 %%
 -- define rules here
 Exp : int                                         {TmInt $1}
@@ -54,7 +56,7 @@ Exp : int                                         {TmInt $1}
     | false                                       {TmFalse}
     | Exp '<' Exp                                 {TmCompare $1 $3}
     | if Exp then Exp else Exp                    {TmIf $2 $4 $6}
-    | let '(' var ':' Type ')' '=' Exp in Exp     {TmLet $3 $5 $8 $10 }
+    -- | let '(' var ':' Type ')' '=' Exp in Exp     {TmLet $3 $5 $8 $10 }
     | readLine Exp                                {TmReadL $2}
     | print Exp                                   {TmPrint $2}
     | PREFIX Exp                                  {TmPrefix $2}
@@ -66,8 +68,8 @@ Exp : int                                         {TmInt $1}
     | '(' Exp ')'                                 { $2 }
 
 
-Type : Bool               {TyBool}
-     | Int                {TyInt}
+-- Type : Bool               {TyBool}
+--      | Int                {TyInt}
 
 
 {
@@ -75,15 +77,15 @@ parseError :: [ToyToken] -> a
 parseError [] = error "Unknown Parse Error"
 parse (t:ts) = error ("Parse error at line:column" ++ (tokenPosn t))
 
-data dataType = TyInt | TyBool
-    deriving(Show, Eq)
+-- data dataType = TyInt | TyBool
+--    deriving(Show, Eq)
 
 type Environment = [ (String, Expr) ]
 
 data Expr = TmInt Int Expr | TmTrue | TmFalse | TmCompare Expr Expr
             | TmIf Expr Expr Expr | TmLet String dataType Expr Expr
-            | TmPrefix Expr | TmStrmArith Expr | TmCopy Expr | TmAccum Expr
-            | TmFib Expr | Cl String dataType Expr Environment
+            | TmReadL Expr | TmPrefix Expr | TmStrmArith Expr
+            | TmCopy Expr | TmAccum Expr | TmFib Expr | Cl String dataType Expr Environment
 
       deriving (Show, Eq)
 }

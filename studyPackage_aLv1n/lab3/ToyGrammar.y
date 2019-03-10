@@ -4,10 +4,9 @@ import ToyTokens
 }
 
 %name parseCalc
-%tokenType {ToyToken}
-%error {parseError}
+%tokentype { ToyToken }
+%error { parseError }
 %token
-
     Bool   { TokenTypeBool _ }
     Int    { TokenTypeInt _ }
     arr     { TokenTypeArr _ }
@@ -29,6 +28,7 @@ import ToyTokens
     ')'    { TokenRParen _ }
 
 
+
 %left arr
 %right let
 %right in
@@ -40,6 +40,7 @@ import ToyTokens
 %left '<'
 %left '+'
 %left APP
+
 
 %%
 Exp : int                                       { TmInt $1 }
@@ -54,19 +55,20 @@ Exp : int                                       { TmInt $1 }
     | Exp Exp %prec APP                         { TmApp $1 $2 }
     | '(' Exp ')'                               { $2 }
 
-Type : Bool            { TyBool }
-     | Int             { TyInt }
-     | Type arr Type   { TyFun $1 $3 }
+-- Type : Bool            { TyBool }
+--     | Int             { TyInt }
+--     | Type arr Type   { TyFun $1 $3 }
+
 
 {
 parseError :: [ToyToken] -> a
 parseError [] = error "Unknown Parse Error"
-parse (t:ts) = error ("Parse error at line:column " ++ (tokenPosn t))
+parseError (t:ts) = error ("Parse error at line:column " ++ (tokenPosn t))
 
-data ToyType = TyInt | TyBool | TyFun ToyType ToyTye
-  deriving (Show, Eq)
+-- data ToyType = TyInt | TyBool | TyFun ToyType ToyType
+--   deriving (Show,Eq)
 
-type Environment = [ (String,Expr) ]
+type Environment = [ (String, Expr) ]
 
 data Expr = TmInt Int | TmTrue | TmFalse | TmCompare Expr Expr
             | TmAdd Expr Expr | TmVar String
@@ -74,4 +76,5 @@ data Expr = TmInt Int | TmTrue | TmFalse | TmCompare Expr Expr
             | TmLambda String ToyType Expr | TmApp Expr Expr
             | Cl String ToyType Expr Environment
     deriving (Show,Eq)
+
 }
