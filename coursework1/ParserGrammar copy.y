@@ -1,10 +1,10 @@
 {
-module ParserGrammar where
-import LexerTokens
+  module ParserGrammar where
+  import LexerTokens
 }
 
 %name parseCalc
-%tokentype {LexerToken}
+%tokenType { LexerToken }
 %error {parseError}
 %token
     Bool          {TokenTypeBool _}
@@ -30,14 +30,13 @@ import LexerTokens
     then          {TokenThen _}
     else          {TokenElse _}
     '='           {TokenEq _}
-    ':'           {TokenCol _}
     '('           {TokenLParen _}
     ')'           {TokenRParen _}
     '{'           {TokenLBrckt _}
     '}'           {TokenRBrckt _}
     var           {TokenVar _ $$}
 
-
+-- define associativity here
 %right let
 %right in
 %nonassoc if
@@ -50,12 +49,14 @@ import LexerTokens
 
 
 %%
-
+-- define rules here
 Exp : int                                         {TmInt $1}
     | var                                         {TmVar $1}
     | true                                        {TmTrue}
     | false                                       {TmFalse}
-    | let '(' var ':' Type ')' '=' Exp            {TmLet $3 $5 $8 }
+    | Exp '<' Exp                                 {TmCompare $1 $3}
+    | if Exp then Exp else Exp                    {TmIf $2 $4 $6}
+    | let '(' var ':' Type ')' '=' Exp in Exp     {TmLet $3 $5 $8 $10 }
     | readLine Exp                                {TmReadL $2}
     | print Exp                                   {TmPrint $2}
     | PREFIX Exp                                  {TmPrefix $2}
@@ -67,26 +68,27 @@ Exp : int                                         {TmInt $1}
     | '(' Exp ')'                                 { $2 }
 
 
+ -- Type : Bool               {TyBool}
+  --    | Int                {TyInt}
 
-Type : Bool               {TyBool}
-     | Int                {TyInt}
-     | var                {TyVar}
+ -- OperationType : PREFIX       {TyPrefix}
+  --             | StrmArith
+
 
 {
-parseError :: [LexerToken] -> a
+parseError :: [ToyToken] -> a
 parseError [] = error "Unknown Parse Error"
 parse (t:ts) = error ("Parse error at line:column" ++ (tokenPosn t))
 
+-- data dataType = TyInt | TyBool
+--    deriving(Show, Eq)
 
+-- type Environment = [ (String, Expr) ]
 
-data DataType = TyInt | TyBool | TyVar
-              deriving(Show, Eq)
-
-
-data Expr = TmInt Int | TmTrue | TmFalse | TmLet String DataType Expr
-            | TmPrint Expr | TmEnd | TmVar String
+data Expr = TmInt Int Expr | TmTrue | TmFalse | TmCompare Expr Expr
+            | TmIf Expr Expr Expr | TmLet String dataType Expr Expr
             | TmReadL Expr | TmPrefix Expr | TmStrmArith Expr
-            | TmCopy Expr | TmAccum Expr | TmFib Expr
+            | TmCopy Expr | TmAccum Expr | TmFib Expr -- | Cl String dataType Expr Environment
 
-            deriving (Show, Eq)
+      deriving (Show, Eq)
 }

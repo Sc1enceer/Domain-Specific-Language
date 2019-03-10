@@ -1,5 +1,5 @@
-import Tokens
-import Grammar
+import LexerTokens
+import ParserGrammar
 import System.Environment
 import Control.Exception
 import System.IO
@@ -8,11 +8,13 @@ import System.IO
 main :: IO ()
 main = catch main' noParse
 
-main' = do (fileName : _ ) <- getArgs 
+main' = do (fileName : _ ) <- getArgs
            sourceText <- readFile fileName
            putStrLn ("Parsing : " ++ sourceText)
            let parsedProg = parseCalc (alexScanTokens sourceText)
-           putStrLn ("Parsed as " ++ (show parsedProg))
+           putStrLn ("Parsed as " ++ (show parsedProg) ++ "\n")
+           -- let result = evalLoop (parsedProg)
+           -- putStrLn ("Evaluates to " ++ (unparse result) ++ "\n")
 
 noParse :: ErrorCall -> IO ()
 noParse e = do let err =  show e

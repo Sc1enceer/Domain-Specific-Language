@@ -55,9 +55,9 @@ Exp : int                                       { TmInt $1 }
     | Exp Exp %prec APP                         { TmApp $1 $2 }
     | '(' Exp ')'                               { $2 }
 
--- Type : Bool            { TyBool }
---     | Int             { TyInt }
---     | Type arr Type   { TyFun $1 $3 }
+Type : Bool            { TyBool }
+     | Int             { TyInt }
+     | Type arr Type   { TyFun $1 $3 }
 
 
 {
@@ -65,10 +65,10 @@ parseError :: [ToyToken] -> a
 parseError [] = error "Unknown Parse Error"
 parseError (t:ts) = error ("Parse error at line:column " ++ (tokenPosn t))
 
--- data ToyType = TyInt | TyBool | TyFun ToyType ToyType
---   deriving (Show,Eq)
+data ToyType = TyInt | TyBool | TyFun ToyType ToyType
+   deriving (Show,Eq)
 
-type Environment = [ (String, Expr) ]
+type Environment = [ (String,Expr) ]
 
 data Expr = TmInt Int | TmTrue | TmFalse | TmCompare Expr Expr
             | TmAdd Expr Expr | TmVar String
@@ -76,5 +76,4 @@ data Expr = TmInt Int | TmTrue | TmFalse | TmCompare Expr Expr
             | TmLambda String ToyType Expr | TmApp Expr Expr
             | Cl String ToyType Expr Environment
     deriving (Show,Eq)
-
-}
+} 

@@ -32,17 +32,17 @@ $white+       ;
   in                        { tok (\p s -> TokenIn p)}
   \<                        { tok (\p s -> TokenLT p)}
   \>                        { tok (\p s -> TokenGT p)}
+  \:                        { tok (\p s -> TokenCol p)}
   if                        { tok (\p s -> TokenIf p) }
   then                      { tok (\p s -> TokenThen p) }
   else                      { tok (\p s -> TokenElse p) }
   --let                       { tok (\p s -> TokenLet p )}
   =                         { tok (\p s -> TokenEq p )}
--- in                        { tok (\p s -> TokenIn p )}
   \(                        { tok (\p s -> TokenLParen p) }
   \)                        { tok (\p s -> TokenRParen p) }
   \{                        { tok (\p s -> TokenLBrckt p)}
   \}                        { tok (\p s -> TokenRBrckt p)}
-  $alpha [$alpha $digit \_ \’]*   { tok (\p s -> TokenVar p s) }
+  \$alpha [$alpha $digit \_ \’]*   { tok (\p s -> TokenVar p s) }
 
 
 -- Helper function
@@ -64,12 +64,14 @@ data LexerToken =
   TokenCopy           AlexPosn          |
   TokenAccum          AlexPosn          |
   TokenFIB            AlexPosn          |
-  TokenPrint          AlexPosn String   |
+  TokenPrint          AlexPosn          |
   TokenEOL            AlexPosn          |
   TokenLet            AlexPosn          |
   TokenIn             AlexPosn          |
   TokenLT             AlexPosn          |
   TokenGT             AlexPosn          |
+  TokenVar            AlexPosn String   |
+  TokenCol            AlexPosn          |
   TokenIf             AlexPosn          |
   TokenThen           AlexPosn          |
   TokenElse           AlexPosn          |
@@ -78,34 +80,36 @@ data LexerToken =
   TokenRParen         AlexPosn          |
   TokenLBrckt         AlexPosn          |
   TokenRBrckt         AlexPosn
-  TokenVar            AlexPosn String
+
   deriving (Eq,Show)
 
-  tokenPosn :: Token -> String
-  tokenPosn (TokenTypeBool (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenTypeInt  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenInt  (AlexPn a l c) _) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenTrue  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenFalse  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenRead  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenPrefix  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenStrArith (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenCopy (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenAccum (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenFIB  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenPrint  (AlexPn a l c) _) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenEOL (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenLet (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenIn (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenLT (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenGT (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenIf (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenThen (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenElse (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenEq (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenLParen (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenRParen (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenLBrckt  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenRBrckt  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-  tokenPosn (TokenVar (AlexPn a l c) _) = show(l) ++ ":" ++ show(c)
+tokenPosn :: LexerToken -> String
+tokenPosn (TokenTypeBool (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenTypeInt  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenInt  (AlexPn a l c) _) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenTrue  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenFalse  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenRead  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenPrefix  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenStrmArith (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenCopy (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenAccum (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenFIB  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenPrint  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenEOL (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenLet (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenIn (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenLT (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenGT (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenCol (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenIf (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenThen (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenElse (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenEq (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenLParen (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenRParen (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenLBrckt  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenRBrckt  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenVar (AlexPn a l c) _) = show(l) ++ ":" ++ show(c)
+
 }
