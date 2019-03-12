@@ -511,92 +511,84 @@ alexScanTokens str0 = go (alexStartPos,'\n',[],str0)
 alex_tab_size :: Int
 alex_tab_size = 8
 alex_base :: Array Int Int
-alex_base = listArray (0 :: Int, 96)
+alex_base = listArray (0 :: Int, 105)
   [ -8
   , -95
   , -94
-  , -93
-  , -80
-  , -67
-  , -28
-  , -89
-  , -84
-  , -139
-  , -96
   , -101
-  , -98
-  , -83
-  , -54
-  , -65
-  , -52
+  , -92
   , -79
-  , -78
-  , -90
-  , -85
+  , -66
+  , -27
+  , -88
+  , -83
+  , -138
+  , -93
+  , -100
+  , -99
+  , -86
+  , -77
+  , -52
+  , -63
+  , -50
   , -76
   , -75
-  , -45
-  , -40
+  , -85
+  , -84
+  , -74
+  , -67
   , -70
-  , -61
+  , -68
+  , -41
+  , -28
+  , -49
+  , -42
+  , -40
+  , -9
+  , -4
+  , -1
+  , -31
+  , -30
+  , -39
+  , -33
+  , -47
+  , -43
+  , -6
+  , -26
+  , -38
+  , -35
+  , -37
+  , -34
+  , 3
   , -32
   , -29
-  , -26
-  , -46
-  , -42
-  , -53
-  , -41
-  , -55
-  , -51
-  , -18
-  , -34
-  , -39
-  , -47
-  , -44
-  , -5
-  , -38
-  , -2
-  , -36
-  , -35
-  , -27
-  , -50
-  , -25
-  , 70
+  , 11
   , -24
-  , 1
-  , -33
-  , -22
   , -19
-  , -20
-  , -15
-  , -3
-  , -31
+  , -36
+  , -18
+  , 77
+  , -22
+  , 9
+  , -25
   , -14
-  , 16
-  , -12
-  , -4
-  , 5
-  , -9
   , -7
-  , -10
-  , 101
+  , -12
+  , -11
+  , 8
+  , -5
+  , -3
+  , 36
+  , 1
+  , 21
+  , 12
+  , 4
+  , 5
+  , 14
+  , 114
   , 0
   , 0
-  , 71
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
+  , 80
   , 0
   , 0
   , 0
@@ -608,324 +600,354 @@ alex_base = listArray (0 :: Int, 96)
   , 0
   , 0
   , 0
-  , 86
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 99
   ]
 
 alex_table :: Array Int Int
-alex_table = listArray (0 :: Int, 356)
+alex_table = listArray (0 :: Int, 369)
   [ 0
-  , 67
-  , 67
-  , 67
-  , 67
-  , 67
-  , 71
-  , 72
-  , 75
+  , 73
+  , 73
+  , 73
+  , 73
+  , 73
+  , 77
   , 78
-  , 79
+  , 81
   , 82
-  , 90
-  , 96
-  , 96
-  , 66
-  , 1
+  , 85
+  , 86
+  , 89
+  , 97
+  , 105
+  , 105
   , 2
+  , 1
+  , 72
+  , 70
+  , 3
+  , 68
+  , 6
+  , 66
+  , 73
   , 64
   , 62
-  , 5
-  , 60
-  , 58
-  , 56
-  , 67
-  , 7
-  , 10
+  , 11
+  , 35
+  , 14
+  , 8
+  , 55
+  , 99
+  , 100
   , 15
-  , 30
-  , 53
-  , 52
-  , 49
+  , 59
+  , 103
+  , 58
+  , 57
+  , 17
+  , 76
+  , 76
+  , 76
+  , 76
+  , 76
+  , 76
+  , 76
+  , 76
+  , 76
+  , 76
+  , 94
+  , 104
   , 92
+  , 98
   , 93
   , 51
-  , 50
-  , 45
-  , 43
-  , 24
-  , 40
-  , 70
-  , 70
-  , 70
-  , 70
-  , 70
-  , 70
-  , 70
-  , 70
-  , 70
-  , 70
-  , 87
-  , 38
-  , 85
-  , 91
-  , 86
-  , 37
-  , 29
-  , 28
-  , 20
-  , 23
-  , 31
-  , 35
-  , 16
-  , 32
-  , 27
-  , 55
-  , 41
-  , 25
-  , 14
-  , 42
-  , 22
-  , 21
-  , 36
-  , 12
-  , 48
-  , 34
-  , 13
-  , 18
-  , 9
-  , 8
-  , 6
-  , 4
-  , 80
-  , 61
-  , 76
-  , 83
-  , 59
-  , 11
-  , 3
-  , 19
-  , 65
-  , 63
-  , 77
-  , 54
-  , 26
-  , 89
-  , 0
-  , 57
-  , 68
-  , 88
-  , 17
-  , 73
-  , 81
-  , 44
-  , 39
-  , 74
+  , 56
   , 33
-  , 84
+  , 22
+  , 27
+  , 50
+  , 23
+  , 18
+  , 28
   , 46
-  , 69
-  , 67
-  , 67
-  , 67
-  , 67
-  , 67
-  , 94
-  , 0
-  , 95
-  , 0
-  , 70
-  , 70
-  , 70
-  , 70
-  , 70
-  , 70
-  , 70
-  , 70
-  , 70
-  , 70
-  , 0
-  , 0
-  , 0
-  , 0
-  , 67
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 0
-  , 0
-  , 0
-  , 0
-  , 96
-  , 0
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 96
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
+  , 61
+  , 44
+  , 42
+  , 36
+  , 40
+  , 34
+  , 37
+  , 41
+  , 49
   , 47
+  , 39
+  , 32
+  , 29
+  , 48
+  , 25
+  , 26
+  , 16
+  , 24
+  , 54
+  , 13
+  , 20
+  , 9
+  , 7
+  , 65
+  , 5
+  , 31
+  , 67
+  , 10
+  , 60
+  , 30
+  , 12
+  , 4
+  , 63
+  , 71
+  , 96
+  , 19
+  , 21
+  , 87
+  , 69
+  , 45
+  , 84
+  , 38
+  , 43
+  , 52
+  , 83
+  , 95
+  , 90
+  , 80
+  , 88
+  , 79
+  , 101
+  , 0
+  , 102
+  , 91
+  , 0
+  , 0
+  , 75
+  , 74
+  , 73
+  , 73
+  , 73
+  , 73
+  , 73
+  , 76
+  , 76
+  , 76
+  , 76
+  , 76
+  , 76
+  , 76
+  , 76
+  , 76
+  , 76
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 73
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 0
+  , 0
+  , 0
+  , 0
+  , 105
+  , 0
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 105
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 53
   , 0
   , 0
   , 0
@@ -973,7 +995,7 @@ alex_table = listArray (0 :: Int, 356)
   ]
 
 alex_check :: Array Int Int
-alex_check = listArray (0 :: Int, 356)
+alex_check = listArray (0 :: Int, 369)
   [ -1
   , 9
   , 10
@@ -982,6 +1004,7 @@ alex_check = listArray (0 :: Int, 356)
   , 13
   , 101
   , 101
+  , 109
   , 101
   , 89
   , 77
@@ -989,31 +1012,30 @@ alex_check = listArray (0 :: Int, 356)
   , 101
   , 97
   , 153
-  , 111
-  , 117
   , 115
-  , 101
+  , 117
+  , 111
+  , 105
+  , 97
   , 73
   , 85
   , 73
-  , 101
-  , 101
   , 32
-  , 115
+  , 101
+  , 101
   , 111
-  , 67
   , 36
-  , 105
-  , 105
+  , 103
+  , 115
   , 39
   , 40
   , 41
-  , 79
+  , 101
   , 105
-  , 97
-  , 69
+  , 44
+  , 105
+  , 79
   , 67
-  , 65
   , 48
   , 49
   , 50
@@ -1025,74 +1047,83 @@ alex_check = listArray (0 :: Int, 356)
   , 56
   , 57
   , 58
-  , 97
+  , 59
   , 60
   , 61
   , 62
   , 97
-  , 109
+  , 105
   , 65
   , 66
   , 67
+  , 69
+  , 101
+  , 70
+  , 67
+  , 65
+  , 73
+  , 97
+  , 97
   , 101
   , 116
-  , 70
+  , 109
   , 114
-  , 82
-  , 73
-  , 100
-  , 114
-  , 70
-  , 108
-  , 114
-  , 76
   , 80
   , 108
-  , 112
+  , 100
   , 83
+  , 82
+  , 114
+  , 116
+  , 76
+  , 114
+  , 70
+  , 114
   , 112
+  , 108
   , 104
-  , 128
   , 104
   , 10
+  , 110
   , 80
-  , 66
+  , 98
   , 116
-  , 88
-  , 116
-  , 110
-  , 114
-  , 110
-  , 108
-  , 110
-  , 110
-  , 104
+  , 128
   , 101
   , 102
-  , 110
-  , -1
-  , 105
-  , 108
-  , 102
-  , 108
-  , 110
-  , 116
-  , 111
-  , 112
-  , 100
   , 114
   , 110
+  , 105
+  , 110
+  , 110
+  , 108
+  , 108
+  , 66
+  , 110
+  , 112
+  , 104
+  , 114
+  , 115
   , 116
+  , 88
+  , 102
   , 116
+  , 100
+  , 116
+  , 110
+  , 123
+  , -1
+  , 125
+  , 110
+  , -1
+  , -1
+  , 116
+  , 108
   , 9
   , 10
   , 11
   , 12
   , 13
-  , 123
-  , -1
-  , 125
-  , -1
   , 48
   , 49
   , 50
@@ -1103,6 +1134,10 @@ alex_check = listArray (0 :: Int, 356)
   , 55
   , 56
   , 57
+  , -1
+  , -1
+  , -1
+  , -1
   , -1
   , -1
   , -1
@@ -1334,7 +1369,7 @@ alex_check = listArray (0 :: Int, 356)
   ]
 
 alex_deflt :: Array Int Int
-alex_deflt = listArray (0 :: Int, 96)
+alex_deflt = listArray (0 :: Int, 105)
   [ -1
   , -1
   , -1
@@ -1432,9 +1467,18 @@ alex_deflt = listArray (0 :: Int, 96)
   , -1
   , -1
   , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
   ]
 
-alex_accept = listArray (0 :: Int, 96)
+alex_accept = listArray (0 :: Int, 105)
   [ AlexAccNone
   , AlexAccNone
   , AlexAccNone
@@ -1502,7 +1546,16 @@ alex_accept = listArray (0 :: Int, 96)
   , AlexAccNone
   , AlexAccNone
   , AlexAccNone
+  , AlexAccNone
+  , AlexAccNone
+  , AlexAccNone
+  , AlexAccNone
+  , AlexAccNone
+  , AlexAccNone
   , AlexAccSkip
+  , AlexAcc 31
+  , AlexAcc 30
+  , AlexAcc 29
   , AlexAcc 28
   , AlexAcc 27
   , AlexAcc 26
@@ -1534,39 +1587,42 @@ alex_accept = listArray (0 :: Int, 96)
   , AlexAcc 0
   ]
 
-alex_actions = array (0 :: Int, 29)
-  [ (28,alex_action_1)
-  , (27,alex_action_2)
-  , (26,alex_action_3)
-  , (25,alex_action_4)
-  , (24,alex_action_5)
-  , (23,alex_action_6)
-  , (22,alex_action_7)
-  , (21,alex_action_8)
-  , (20,alex_action_9)
-  , (19,alex_action_10)
-  , (18,alex_action_11)
-  , (17,alex_action_12)
-  , (16,alex_action_13)
-  , (15,alex_action_14)
-  , (14,alex_action_15)
-  , (13,alex_action_16)
-  , (12,alex_action_17)
-  , (11,alex_action_18)
-  , (10,alex_action_19)
-  , (9,alex_action_20)
-  , (8,alex_action_21)
-  , (7,alex_action_22)
-  , (6,alex_action_23)
-  , (5,alex_action_24)
-  , (4,alex_action_25)
-  , (3,alex_action_26)
-  , (2,alex_action_27)
-  , (1,alex_action_28)
-  , (0,alex_action_29)
+alex_actions = array (0 :: Int, 32)
+  [ (31,alex_action_1)
+  , (30,alex_action_2)
+  , (29,alex_action_3)
+  , (28,alex_action_4)
+  , (27,alex_action_5)
+  , (26,alex_action_6)
+  , (25,alex_action_7)
+  , (24,alex_action_8)
+  , (23,alex_action_9)
+  , (22,alex_action_10)
+  , (21,alex_action_11)
+  , (20,alex_action_12)
+  , (19,alex_action_13)
+  , (18,alex_action_14)
+  , (17,alex_action_15)
+  , (16,alex_action_16)
+  , (15,alex_action_17)
+  , (14,alex_action_18)
+  , (13,alex_action_19)
+  , (12,alex_action_20)
+  , (11,alex_action_21)
+  , (10,alex_action_22)
+  , (9,alex_action_23)
+  , (8,alex_action_24)
+  , (7,alex_action_25)
+  , (6,alex_action_26)
+  , (5,alex_action_27)
+  , (4,alex_action_28)
+  , (3,alex_action_29)
+  , (2,alex_action_30)
+  , (1,alex_action_31)
+  , (0,alex_action_32)
   ]
 
-{-# LINE 49 "LexerTokens.x" #-}
+{-# LINE 52 "LexerTokens.x" #-}
 
 tok f p s = f p s
 
@@ -1577,8 +1633,9 @@ data LexerToken =
   TokenInt            AlexPosn Int      |
   TokenTrue           AlexPosn          |
   TokenFalse          AlexPosn          |
-  TokenRead           AlexPosn          |
+  TokenBegin          AlexPosn          |
   TokenEnd            AlexPosn          |
+  TokenStream         AlexPosn          |
   TokenReadLine       AlexPosn          |
   TokenPrefix         AlexPosn          |
   TokenStrmArith      AlexPosn          |
@@ -1600,7 +1657,9 @@ data LexerToken =
   TokenLParen         AlexPosn          |
   TokenRParen         AlexPosn          |
   TokenLBrckt         AlexPosn          |
-  TokenRBrckt         AlexPosn
+  TokenRBrckt         AlexPosn          |
+  TokenComma          AlexPosn          |
+  TokenSemiCol        AlexPosn
 
   deriving (Eq,Show)
 
@@ -1610,7 +1669,9 @@ tokenPosn (TokenTypeInt  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenInt  (AlexPn a l c) _) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenTrue  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenFalse  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-tokenPosn (TokenRead  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenBegin  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenEnd  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenStream  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenPrefix  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenStrmArith (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenCopy (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
@@ -1632,6 +1693,8 @@ tokenPosn (TokenRParen (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenLBrckt  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenRBrckt  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenVar (AlexPn a l c) _) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenComma (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenSemiCol (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 
 
 alex_action_1 =  tok (\p s -> TokenTypeBool p)
@@ -1639,30 +1702,33 @@ alex_action_2 =  tok (\p s -> TokenTypeInt p)
 alex_action_3 =  tok (\p s -> TokenInt p (read s)) 
 alex_action_4 =  tok (\p s -> TokenTrue p)
 alex_action_5 =  tok (\p s -> TokenFalse p)
-alex_action_6 =  tok (\p s -> TokenRead p)
+alex_action_6 =  tok (\p s -> TokenBegin p) 
 alex_action_7 =  tok (\p s -> TokenEnd p)
-alex_action_8 =  tok (\p s -> TokenReadLine p)
-alex_action_9 =  tok (\p s -> TokenPrefix p)
-alex_action_10 =  tok (\p s -> TokenStrmArith p)
-alex_action_11 =  tok (\p s -> TokenCopy p)
-alex_action_12 =  tok (\p s -> TokenAccum p)
-alex_action_13 =  tok (\p s -> TokenFIB p)
-alex_action_14 =  tok (\p s -> TokenPrint p)
-alex_action_15 =  tok (\p s -> TokenEOL p)
-alex_action_16 =  tok (\p s -> TokenLet p)
-alex_action_17 =  tok (\p s -> TokenIn p)
-alex_action_18 =  tok (\p s -> TokenLT p)
-alex_action_19 =  tok (\p s -> TokenGT p)
-alex_action_20 =  tok (\p s -> TokenCol p)
-alex_action_21 =  tok (\p s -> TokenIf p) 
-alex_action_22 =  tok (\p s -> TokenThen p) 
-alex_action_23 =  tok (\p s -> TokenElse p) 
-alex_action_24 =  tok (\p s -> TokenEq p )
-alex_action_25 =  tok (\p s -> TokenLParen p) 
-alex_action_26 =  tok (\p s -> TokenRParen p) 
-alex_action_27 =  tok (\p s -> TokenLBrckt p)
-alex_action_28 =  tok (\p s -> TokenRBrckt p)
-alex_action_29 =  tok (\p s -> TokenVar p s) 
+alex_action_8 =  tok (\p s -> TokenStream p)
+alex_action_9 =  tok (\p s -> TokenReadLine p)
+alex_action_10 =  tok (\p s -> TokenPrefix p)
+alex_action_11 =  tok (\p s -> TokenStrmArith p)
+alex_action_12 =  tok (\p s -> TokenCopy p)
+alex_action_13 =  tok (\p s -> TokenAccum p)
+alex_action_14 =  tok (\p s -> TokenFIB p)
+alex_action_15 =  tok (\p s -> TokenPrint p)
+alex_action_16 =  tok (\p s -> TokenEOL p)
+alex_action_17 =  tok (\p s -> TokenLet p)
+alex_action_18 =  tok (\p s -> TokenIn p)
+alex_action_19 =  tok (\p s -> TokenLT p)
+alex_action_20 =  tok (\p s -> TokenGT p)
+alex_action_21 =  tok (\p s -> TokenCol p)
+alex_action_22 =  tok (\p s -> TokenIf p) 
+alex_action_23 =  tok (\p s -> TokenThen p) 
+alex_action_24 =  tok (\p s -> TokenElse p) 
+alex_action_25 =  tok (\p s -> TokenEq p )
+alex_action_26 =  tok (\p s -> TokenLParen p) 
+alex_action_27 =  tok (\p s -> TokenRParen p) 
+alex_action_28 =  tok (\p s -> TokenLBrckt p)
+alex_action_29 =  tok (\p s -> TokenRBrckt p)
+alex_action_30 =  tok (\p s -> TokenComma p)
+alex_action_31 =  tok (\p s -> TokenSemiCol p)
+alex_action_32 =  tok (\p s -> TokenVar p s) 
 {-# LINE 1 "templates/GenericTemplate.hs" #-}
 -- -----------------------------------------------------------------------------
 -- ALEX TEMPLATE

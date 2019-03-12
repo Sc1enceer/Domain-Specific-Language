@@ -12,9 +12,8 @@ import LexerTokens
     int           {TokenInt _ $$}
     true          {TokenTrue _}
     false         {TokenFalse _}
-    begin         {TokenBegin _}
+    open          {TokenRead _}
     end           {TokenEnd _}
-    stream        {TokenStream _}
     readLine      {TokenReadLine _}
     PREFIX        {TokenPrefix _}
     StrmArith     {TokenStrmArith _}
@@ -38,26 +37,23 @@ import LexerTokens
     '}'           {TokenRBrckt _}
     ','           {TokenComma _}
     var           {TokenVar _ $$}
-    ';'           {TokenSemiCol _}
 
 
 %right let
 %right in
 %right ':'
-%left ';'
 %nonassoc if
 %nonassoc then
 %nonassoc else
 %nonassoc '(' ')' '{' '}'
-%right PREFIX StrmArith COPY ACCUM FIB
+%nonassoc PREFIX StrmArith COPY ACCUM FIB
 %left '<'
 %left '>'
 
 
 %%
 
-Exp : begin Exp end                               {TmBody $2}
-    | stream                                      {TmStream}
+Exp : Exp ':' Exp                                 {TmInts $1 $3}
     | int                                         {TmInt $1}
     | var                                         {TmVar $1}
     | true                                        {TmTrue}
@@ -79,6 +75,8 @@ Type : Bool                     {TyBool}
      | Int                      {TyInt}
      | var                      {TyVar}
 
+
+
 {
 parseError :: [LexerToken] -> a
 parseError [] = error "Unknown Parse Error"
@@ -88,11 +86,9 @@ parse (t:ts) = error ("Parse error at line:column" ++ (tokenPosn t))
 data DataType = TyInt | TyBool | TyVar
               deriving(Show, Eq)
 
-data Line = TmLines | TmLine
-
 -- type Environment = [ (String, Expr) ]
 
-data Expr = TmBody Expr | TmStream | TmInt Int |  TmTrue | TmFalse | TmComma | TmLet String DataType Expr
+data Expr = TmInts Expr Expr | TmInt Int |  TmTrue | TmFalse | TmComma | TmLet String DataType Expr
             | TmPrint Expr | TmEnd | TmVar String
             | TmReadL Expr | TmPrefix Expr | TmStrmArith Expr
             | TmCopy Expr | TmAccum Expr | TmFib Expr

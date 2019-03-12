@@ -1,1 +1,5 @@
-( 3 )
+begin
+print
+FIB
+stream
+end

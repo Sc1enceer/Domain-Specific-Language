@@ -18,9 +18,8 @@ $white+       ;
   $digit+                   { tok (\p s -> TokenInt p (read s)) }
   true                      { tok (\p s -> TokenTrue p)}
   false                     { tok (\p s -> TokenFalse p)}
-  begin                     { tok (\p s -> TokenBegin p) }
+  open                      { tok (\p s -> TokenRead p)}
   end                       { tok (\p s -> TokenEnd p)}
-  stream                    { tok (\p s -> TokenStream p)}
   readLine                  { tok (\p s -> TokenReadLine p)}
   PREFIX                    { tok (\p s -> TokenPrefix p)}
   StrmArith                 { tok (\p s -> TokenStrmArith p)}
@@ -44,7 +43,6 @@ $white+       ;
   \{                        { tok (\p s -> TokenLBrckt p)}
   \}                        { tok (\p s -> TokenRBrckt p)}
   \,                        { tok (\p s -> TokenComma p)}
-  \;                        { tok (\p s -> TokenSemiCol p)}
   \$alpha [$alpha $digit \_ \’]*   { tok (\p s -> TokenVar p s) }
 
 
@@ -59,9 +57,8 @@ data LexerToken =
   TokenInt            AlexPosn Int      |
   TokenTrue           AlexPosn          |
   TokenFalse          AlexPosn          |
-  TokenBegin          AlexPosn          |
+  TokenRead           AlexPosn          |
   TokenEnd            AlexPosn          |
-  TokenStream         AlexPosn          |
   TokenReadLine       AlexPosn          |
   TokenPrefix         AlexPosn          |
   TokenStrmArith      AlexPosn          |
@@ -84,8 +81,7 @@ data LexerToken =
   TokenRParen         AlexPosn          |
   TokenLBrckt         AlexPosn          |
   TokenRBrckt         AlexPosn          |
-  TokenComma          AlexPosn          |
-  TokenSemiCol        AlexPosn
+  TokenComma          AlexPosn
 
   deriving (Eq,Show)
 
@@ -95,9 +91,7 @@ tokenPosn (TokenTypeInt  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenInt  (AlexPn a l c) _) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenTrue  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenFalse  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-tokenPosn (TokenBegin  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-tokenPosn (TokenEnd  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-tokenPosn (TokenStream  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenRead  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenPrefix  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenStrmArith (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenCopy (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
@@ -120,6 +114,5 @@ tokenPosn (TokenLBrckt  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenRBrckt  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenVar (AlexPn a l c) _) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenComma (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-tokenPosn (TokenSemiCol (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 
 }
