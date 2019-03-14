@@ -96,7 +96,7 @@ eval1 (TmCopy e) input = D2 (f)
 
 eval1 (TmStrmArith e) input = D1 (map (\x -> (head x) + 3 * (last x)) input)
 
-eval1 (TmAccum e) input = TmFib e input
+eval1 (TmAccum e) input =  D1 (scanl1 (+) (map(head) input))
 -- eval1 (TmFib e) input = TmFib e input
 
 
