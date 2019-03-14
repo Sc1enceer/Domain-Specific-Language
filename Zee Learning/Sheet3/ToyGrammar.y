@@ -74,6 +74,7 @@ data Expr = TmInt Int | TmTrue | TmFalse | TmCompare Expr Expr
             | TmAdd Expr Expr | TmVar String
             | TmIf Expr Expr Expr | TmLet String ToyType Expr Expr
             | TmLambda String ToyType Expr | TmApp Expr Expr
-            
+            | Cl String ToyType Expr Environment
+
     deriving (Show,Eq)
 }

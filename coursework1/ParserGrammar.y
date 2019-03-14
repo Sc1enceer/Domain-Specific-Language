@@ -90,12 +90,13 @@ data DataType = TyInt | TyBool | TyVar
 
 data Line = TmLines | TmLine
 
--- type Environment = [ (String, Expr) ]
+type Environment = [ (String, Expr) ]
 
 data Expr = TmBody Expr | TmStream | TmInt Int |  TmTrue | TmFalse | TmComma | TmLet String DataType Expr
             | TmPrint Expr | TmEnd | TmVar String
             | TmReadL Expr | TmPrefix Expr | TmStrmArith Expr
             | TmCopy Expr | TmAccum Expr | TmFib Expr
+            | Cl Expr Environment
 
             deriving (Show, Eq)
 }

@@ -1,6 +1,9 @@
 import System.IO
 import Control.Monad
 
+
+
+
 main = do
         let list = []
         handle <- openFile "input.txt" ReadMode
