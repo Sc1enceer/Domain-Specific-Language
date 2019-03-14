@@ -97,8 +97,29 @@ eval1 (TmCopy e) input = D2 (f)
 eval1 (TmStrmArith e) input = D1 (map (\x -> (head x) + 3 * (last x)) input)
 
 eval1 (TmAccum e) input =  D1 (scanl1 (+) (map(head) input))
--- eval1 (TmFib e) input = TmFib e input
 
+eval1 (TmFib e) input = D1 (fibSolver list 1 n  (map(head) input))
+                                where
+                                  n = length (map(head) input)
+                                  fib = 1 : 1 : zipWith (+) fib (tail fib)
+                                  list = (take n fib)
+
+
+
+
+
+fibSolver :: [Int] -> Int -> Int -> [Int] -> [Int]
+
+fibSolver list counter inputL input
+                | counter > inputL       = []
+                | otherwise               = value : (fibSolver list (counter + 1) inputL input)
+                                      where useList = take (counter) list
+                                            useInput = take (counter) input
+                                            value = anotherHelper useList useInput
+
+anotherHelper :: [Int] -> [Int] -> Int
+anotherHelper [] [] = 0
+anotherHelper (x:xs) (l) = x * (last l) + (anotherHelper xs (init l))
 
 
 replicate' :: [[Int]] -> [[Int]]
@@ -110,6 +131,9 @@ replicate' (x:xs) = concatMap (replicate 2) ([head x]) : replicate' xs
 -- evalLoop e = evalLoop' (e)
 --           where evalLoop' (e) = if (isValue e') then e' else evalLoop' (e')
 --                                           where (e') = eval1 (e)
+
+
+
 
 unparse :: Expr -> String
 unparse (TmTrue) = "true"
