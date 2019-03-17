@@ -1,5 +1,3 @@
 begin
-print
-FIB
-stream
+length reverse push 3 3 getStream
 end

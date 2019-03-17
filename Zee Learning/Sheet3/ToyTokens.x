@@ -1,17 +1,17 @@
-{ 
-module ToyTokens where 
+{
+module ToyTokens where
 }
 
-%wrapper "posn" 
-$digit = 0-9     
--- digits 
-$alpha = [a-zA-Z]    
+%wrapper "posn"
+$digit = 0-9
+-- digits
+$alpha = [a-zA-Z]
 -- alphabetic characters
 
 tokens :-
-$white+       ; 
-  "--".*        ; 
-  Bool           { tok (\p s -> TokenTypeBool p)} 
+$white+       ;
+  "--".*        ;
+  Bool           { tok (\p s -> TokenTypeBool p)}
   Int            { tok (\p s -> TokenTypeInt p) }
   "->"             { tok (\p s -> TokenTypeArr p) }
   $digit+        { tok (\p s -> TokenInt p (read s)) }
@@ -29,20 +29,20 @@ $white+       ;
   in             { tok (\p s -> TokenIn p )}
   \(             { tok (\p s -> TokenLParen p) }
   \)             { tok (\p s -> TokenRParen p) }
-  $alpha [$alpha $digit \_ \’]*   { tok (\p s -> TokenVar p s) } 
+  $alpha [$alpha $digit \_ \’]*   { tok (\p s -> TokenVar p s) }
 
-{ 
--- Each action has type :: AlexPosn -> String -> MDLToken 
+{
+-- Each action has type :: AlexPosn -> String -> MDLToken
 
 -- Helper function
 tok f p s = f p s
 
--- The token type: 
-data ToyToken = 
-  TokenTypeBool AlexPosn         | 
-  TokenTypeInt  AlexPosn         | 
+-- The token type:
+data ToyToken =
+  TokenTypeBool AlexPosn         |
+  TokenTypeInt  AlexPosn         |
   TokenTypeArr  AlexPosn         |
-  TokenInt AlexPosn Int          | 
+  TokenInt AlexPosn Int          |
   TokenTrue AlexPosn             |
   TokenFalse AlexPosn            |
   TokenLessThan AlexPosn         |
@@ -58,7 +58,7 @@ data ToyToken =
   TokenLParen AlexPosn           |
   TokenRParen AlexPosn           |
   TokenVar AlexPosn String
-  deriving (Eq,Show) 
+  deriving (Eq,Show)
 
 tokenPosn :: ToyToken -> String
 tokenPosn (TokenTypeBool (AlexPn a l c)) = show(l) ++ ":" ++ show(c)

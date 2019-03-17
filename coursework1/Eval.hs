@@ -10,121 +10,205 @@ import Control.Monad
 --
 -- data Line = TmLines | TmLine
 --
--- type Environment = [ (String, Expr) ]
+-- type TyEnvironment = [ (String, Expr) ]
+-- type ExprEnvironment = [ (String, Expr) ]
 --
--- data Expr = TmBody Expr | TmStream | TmInt Int |  TmTrue | TmFalse | TmComma | TmLet String DataType Expr
---             | TmPrint Expr | TmVar String
+-- data Expr = TmBody Expr | TmIf Expr Expr Expr | TmGt Expr Expr | TmLt Expr Expr
+--             | TmAdd Expr Expr | TmSub Expr Expr | TmMult Expr Expr | TmDiv Expr Expr
+--             | TmGetStream | TmReverse Expr | TmLength Expr | TmInts Int Expr | TmInt Int | TmComma  | TmTrue | TmFalse
+--             | TmPush Int Int Expr | TmApp Expr Expr
+--             | TmPrint Expr | TmEnd | TmVar String
 --             | TmReadL Expr | TmPrefix Expr | TmStrmArith Expr
 --             | TmCopy Expr | TmAccum Expr | TmFib Expr
---             | Cl String DataType Expr Environment
+--             | Cl Expr Environment
 
-data Return = D1 [Int] | D2 [[Int]]
-          deriving (Show, Eq)
+-- data Return = D1 [Int] | D2 [[Int]]
+--           deriving (Show, Eq)
 
 data Frame = HBody Expr | BodyH Expr Environment
-           | HPrint Expr
-           | HPrefix Expr Environment | PrefixH Expr
-           | HStrmArith Expr Environment | StrmArithH Expr
-           | HCopy Expr Environment | CopyH Expr
-           | HAccum Expr Environment | AccumH Expr
-           | HFib Expr Environment | FibH Expr
+           | HPrint Expr | PrintH Expr Environment
+           | HAdd Expr | AddH Expr Environment
+           | HMult Expr | MultH Expr Environment
+           | HSub Expr | SubH Expr Environment
+           | HDiv Expr | DivH Expr Environment
+           | HLt Expr | LtH Expr Environment
+           | HGt Expr | GtH Expr Environment
+           | HIf Expr Expr Environment
+           | HApp Expr | AppH Expr Environment
+           | HPush Int Int Environment
+           deriving (Show, Eq)
+
 
 type Kontinuation = [ Frame ]
 
 type State = (Expr, Environment, Kontinuation)
 
 -- Function to {-# UNPACK #-}  a closure to extract the underlying term and Environment
--- unpack :: Expr -> (Expr, Environment)
--- unpack (Cl expr env) = (Expr, env)
--- unpack e = (e, [])
+unpack :: Expr -> (Expr, Environment)
+unpack (Cl x t e env) = ((TmLambda x t e), env)
+unpack e = (e, [])
 
 -- look up a value in an environment and unpack it
--- getValueBinding :: String -> Environment -> (Expr, Environment)
--- getValueBinding x [] = error "Variable binding not found"
--- getValueBinding x ((y, e):env) | x == y   = unpack e
---                                | otherwise = getValueBinding x env
+getValueBinding :: String -> Environment -> (Expr, Environment)
+getValueBinding x [] = error "Variable binding not found"
+getValueBinding x ((y, e):env) | x == y   = unpack e
+                               | otherwise = getValueBinding x env
+
+
+
+update :: Environment -> String -> Expr -> Environment
+update env x e = (x, e) : env
 
 -- Checks for terminated expresisons
 isValue :: Expr -> Bool
+isValue (TmInts _ _) = True
 isValue (TmInt _) = True
 isValue TmTrue = True
 isValue TmFalse = True
--- isValue (Cl _ _) = True
-isValue (TmStream) =  True
+isValue (Cl _ _ _ _) = True
+isValue (TmGetStream) =  True
 isValue _ = False
 
+isValueExtra :: (Expr, Environment, Kontinuation) -> Bool
+isValueExtra (TmInt _,  _,  _) = True
+isValueExtra ( _, _, _) = False
 
 
 
-merge :: [a] -> [a] -> [[a]]
-merge [] [] = []
-merge (x:xs) (y:ys) = [x, y] : merge xs ys
+-- evaluation rules for plus operator
+eval :: State -> State
+eval ((TmVar x), env, k) = (e', env', k)
+                  where (e', env') = getValueBinding x env
+eval (v, env, []) | isValue v   = (v, env, [])
+
+-- Evaluation rules for plus operator
+
+eval ((TmAdd e1 e2), env, k) = (e1, env, (AddH e2 env):k)
+eval ((TmInt n), env1, (AddH e env2):k) = (e, env2, (HAdd (TmInt n)):k )
+eval ((TmInt m), env, (HAdd (TmInt n)) : k) = (TmInt (n + m), [], k)
+
+-- Evaluation rules for subtract operator
+
+eval ((TmSub e1 e2), env, k) = (e1, env, (SubH e2 env):k)
+eval ((TmInt n), env1, (SubH e env2):k) = (e, env2, (HSub (TmInt n)):k )
+eval ((TmInt m), env, (HSub (TmInt n)) : k) = (TmInt (n - m), [], k)
+
+-- Evaluation rules for multiply operator
+
+eval ((TmMult e1 e2), env, k) = (e1, env, (MultH e2 env):k)
+eval ((TmInt n), env1, (MultH e env2):k) = (e, env2, (HMult (TmInt n)):k )
+eval ((TmInt m), env, (HMult (TmInt n)) : k) = (TmInt (n * m), [], k)
+
+-- Evaluation rules for divide operator
+
+eval ((TmDiv e1 e2), env, k) = (e1, env, (DivH e2 env):k)
+eval ((TmInt n), env1, (DivH e env2):k) = (e, env2, (HDiv (TmInt n)):k )
+eval ((TmInt m), env, (HDiv (TmInt n)) : k) = (TmInt (n `div` m), [], k)
 
 
--- small step evaluation Function
-eval1 :: Expr -> [[Int]] -> Return
--- eval1 (e, env, k) = (e', env', k)
---                where (e', env') = getValueBinding x env
+-- Evaluation rules for less than oeprator
 
--- Rule for terminated evaluations
--- eval1 (v, env, []) | isValue v  = (v, env, [])
-
---eval1((TmPrint e1), env, k) = (e1, env, (HPrint e1 env):k)
-
--- Body
---eval1 ((TmPreFix e1), env, k)  | e1 == TmStream       =
-                              -- where stream = inputStream
-
--- Rule for prefix evaluation
-
-
--- Rule for Copy evaluation
-
--- Rule for Stream arithmetic
-
--- Rule for Accumulator
-
--- Rule for Fibonacci
-
-eval1 (TmBody e) input = eval1 e input
-eval1 (TmPrint e) input = eval1 e input
-
-
-eval1 (TmPrefix e) input = D1 (0: (map (head) input))
-eval1 (TmCopy e) input = D2 (f)
-                          where f = replicate' input
-
-eval1 (TmStrmArith e) input = D1 (map (\x -> (head x) + 3 * (last x)) input)
-
-eval1 (TmAccum e) input =  D1 (scanl1 (+) (map(head) input))
-
-eval1 (TmFib e) input = D1 (fibSolver list 1 n  (map(head) input))
-                                where
-                                  n = length (map(head) input)
-                                  fib = 1 : 1 : zipWith (+) fib (tail fib)
-                                  list = (take n fib)
+eval ((TmLt e1 e2),env,k) = (e1,env,(LtH e2 env):k)
+eval ((TmInt n),env1,(LtH e env2):k) = (e,env2,(HLt (TmInt n)) : k)
+eval ((TmInt m),env,(HLt (TmInt n)):k) | n < m = (TmTrue,[],k)
+                                             | otherwise = (TmFalse,[],k)
 
 
 
 
 
-fibSolver :: [Int] -> Int -> Int -> [Int] -> [Int]
 
-fibSolver list counter inputL input
-                | counter > inputL       = []
-                | otherwise               = value : (fibSolver list (counter + 1) inputL input)
-                                      where useList = take (counter) list
-                                            useInput = take (counter) input
-                                            value = anotherHelper useList useInput
+-- Evaluation rules for less than oeprator
+eval ((TmGt e1 e2),env,k) = (e1,env,(GtH e2 env):k)
+eval ((TmInt n),env1,(GtH e env2):k) = (e,env2,(HGt (TmInt n)) : k)
+eval ((TmInt m),env,(HGt (TmInt n)):k) | n > m = (TmTrue,[],k)
+                                            | otherwise = (TmFalse,[],k)
 
-anotherHelper :: [Int] -> [Int] -> Int
-anotherHelper [] [] = 0
-anotherHelper (x:xs) (l) = x * (last l) + (anotherHelper xs (init l))
+-- Evaluatio rules for if then else
+eval ((TmIf e1 e2 e3), env, k) = (e1, env, (HIf e2 e3 env):k)
+eval (TmTrue, env1, (HIf e2 e3 env2):k) = (e2, env2, k)
+eval (TmFalse, env1, (HIf e2 e3 env2):k) = (e3, env2, k)
 
 
-replicate' :: [[Int]] -> [[Int]]
-replicate' [] = []
-replicate' (x:xs) = concatMap (replicate 2) ([head x]) : replicate' xs
+
+-- Function to iterate the small step reduction to termination
+evalLoop :: Expr -> Expr
+evalLoop e = evalLoop' (e,[],[])
+  where evalLoop' (e,env,k) = if (e' == e) && (isValue e') && k' == [] then e' else evalLoop' (e',env',k')
+                       where (e',env',k') = eval (e,env,k)
+
+
+
+--
+-- merge :: [a] -> [a] -> [[a]]
+-- merge [] [] = []
+-- merge (x:xs) (y:ys) = [x, y] : merge xs ys
+
+
+-- -- small step evaluation Function
+-- eval1 :: Expr -> [[Int]] -> Return
+-- -- eval1 (e, env, k) = (e', env', k)
+-- --                where (e', env') = getValueBinding x env
+--
+-- -- Rule for terminated evaluations
+-- -- eval1 (v, env, []) | isValue v  = (v, env, [])
+--
+-- --eval1((TmPrint e1), env, k) = (e1, env, (HPrint e1 env):k)
+--
+-- -- Body
+-- --eval1 ((TmPreFix e1), env, k)  | e1 == TmStream       =
+--                               -- where stream = inputStream
+--
+-- -- Rule for prefix evaluation
+--
+--
+-- -- Rule for Copy evaluation
+--
+-- -- Rule for Stream arithmetic
+--
+-- -- Rule for Accumulator
+--
+-- -- Rule for Fibonacci
+--
+-- eval1 (TmBody e) input = eval1 e input
+-- eval1 (TmPrint e) input = eval1 e input
+--
+--
+-- eval1 (TmPrefix e) input = D1 (0: (map (head) input))
+-- eval1 (TmCopy e) input = D2 (f)
+--                           where f = replicate' input
+--
+-- eval1 (TmStrmArith e) input = D1 (map (\x -> (head x) + 3 * (last x)) input)
+--
+-- eval1 (TmAccum e) input =  D1 (scanl1 (+) (map(head) input))
+--
+-- eval1 (TmFib e) input = D1 (fibSolver list 1 n  (map(head) input))
+--                                 where
+--                                   n = length (map(head) input)
+--                                   fib = 1 : 1 : zipWith (+) fib (tail fib)
+--                                   list = (take n fib)
+--
+--
+--
+--
+--
+-- fibSolver :: [Int] -> Int -> Int -> [Int] -> [Int]
+--
+-- fibSolver list counter inputL input
+--                 | counter > inputL       = []
+--                 | otherwise               = value : (fibSolver list (counter + 1) inputL input)
+--                                       where useList = take (counter) list
+--                                             useInput = take (counter) input
+--                                             value = anotherHelper useList useInput
+--
+-- anotherHelper :: [Int] -> [Int] -> Int
+-- anotherHelper [] [] = 0
+-- anotherHelper (x:xs) (l) = x * (last l) + (anotherHelper xs (init l))
+--
+--
+-- replicate' :: [[Int]] -> [[Int]]
+-- replicate' [] = []
+-- replicate' (x:xs) = concatMap (replicate 2) ([head x]) : replicate' xs
 
 
 -- evalLoop :: Expr -> Expr
@@ -136,9 +220,10 @@ replicate' (x:xs) = concatMap (replicate 2) ([head x]) : replicate' xs
 
 
 unparse :: Expr -> String
+unparse (TmInt n) = show n
 unparse (TmTrue) = "true"
 unparse (TmFalse) = "false"
-unparse (TmStream) = "value"
+--unparse (TmStream) = "value"
 unparse (TmPrefix e) = "prefix value"
 unparse (TmCopy e) = "copy value"
 unparse (TmStrmArith e) = "arithmetic value"

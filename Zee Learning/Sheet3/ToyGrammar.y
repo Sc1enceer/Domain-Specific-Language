@@ -55,6 +55,7 @@ Exp : int                                       { TmInt $1 }
     | Exp Exp %prec APP                         { TmApp $1 $2 }
     | '(' Exp ')'                               { $2 }
 
+
 Type : Bool            { TyBool }
      | Int             { TyInt }
      | Type arr Type   { TyFun $1 $3 }
