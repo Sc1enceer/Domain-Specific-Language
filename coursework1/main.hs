@@ -8,7 +8,7 @@ import System.IO
 main :: IO ()
 main = catch main' noParse
 
-main' = do putStrLn ("Toy Interactive Mode - enter an expression : ")
+main' = do putStrLn ("enter an expression : ")
            sourceText <- getLine
            let parsedProg = parseCalc (alexScanTokens sourceText)
            putStrLn ("Parsed as " ++ (show parsedProg))

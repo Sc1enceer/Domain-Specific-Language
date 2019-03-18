@@ -1,3 +1,1 @@
-begin
-length reverse push 3 3 getStream
-end
+1 , 2 , 3 , 4

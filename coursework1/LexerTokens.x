@@ -21,11 +21,6 @@ $white+       ;
   begin                     { tok (\p s -> TokenBegin p) }
   end                       { tok (\p s -> TokenEnd p)}
   getStream                 { tok (\p s -> TokenGetStream p)}
-  PREFIX                    { tok (\p s -> TokenPrefix p)}
-  StrmArith                 { tok (\p s -> TokenStrmArith p)}
-  COPY                      { tok (\p s -> TokenCopy p)}
-  ACCUM                     { tok (\p s -> TokenAccum p)}
-  FIB                       { tok (\p s -> TokenFIB p)}
   print                     { tok (\p s -> TokenPrint p)}
   '\n'                      { tok (\p s -> TokenEOL p)}
   let                       { tok (\p s -> TokenLet p)}
@@ -54,8 +49,12 @@ $white+       ;
   length                    { tok (\p s -> TokenLength p)}
   \\                        { tok (\p s -> TokenLambda p) }
   "->"                      { tok (\p s -> TokenArr p) }
+  \++                       { tok (\p s -> TokenMerge p)}
   push                      { tok (\p s -> TokenPush p) }
-  \$alpha [$alpha $digit \_ \’]*   { tok (\p s -> TokenVar p s) }
+  duplicate                 { tok (\p s -> TokenDuplicate p) }
+  splitAt                     { tok (\p s -> TokenSplitAt p) }
+  $alpha [$alpha $digit \_ \’]*   { tok (\p s -> TokenVar p s) }
+
 
 
 -- Helper function
@@ -72,11 +71,6 @@ data LexerToken =
   TokenBegin          AlexPosn          |
   TokenEnd            AlexPosn          |
   TokenGetStream      AlexPosn          |
-  TokenPrefix         AlexPosn          |
-  TokenStrmArith      AlexPosn          |
-  TokenCopy           AlexPosn          |
-  TokenAccum          AlexPosn          |
-  TokenFIB            AlexPosn          |
   TokenPrint          AlexPosn          |
   TokenEOL            AlexPosn          |
   TokenLet            AlexPosn          |
@@ -104,7 +98,10 @@ data LexerToken =
   TokenLength         AlexPosn          |
   TokenLambda         AlexPosn          |
   TokenArr            AlexPosn          |
-  TokenPush           AlexPosn
+  TokenPush           AlexPosn          |
+  TokenDuplicate      AlexPosn          |
+  TokenMerge          AlexPosn          |
+  TokenSplitAt        AlexPosn
 
 
 
@@ -123,11 +120,6 @@ tokenPosn (TokenFalse  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenBegin  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenEnd  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenGetStream  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-tokenPosn (TokenPrefix  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-tokenPosn (TokenStrmArith (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-tokenPosn (TokenCopy (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-tokenPosn (TokenAccum (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-tokenPosn (TokenFIB  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenPrint  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenEOL (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenLet (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
@@ -156,5 +148,8 @@ tokenPosn (TokenLength (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenLambda (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenArr (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenPush (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenMerge (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenDuplicate (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenSplitAt (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 
 }

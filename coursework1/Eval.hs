@@ -27,6 +27,9 @@ import Control.Monad
 
 data Frame = HBody Expr | BodyH Expr Environment
            | HPrint Expr | PrintH Expr Environment
+           | HLet String DataType Environment
+           | HAddL Expr | AddLH Expr Environment
+           | HLength Expr | LengthH Expr Environment
            | HAdd Expr | AddH Expr Environment
            | HMult Expr | MultH Expr Environment
            | HSub Expr | SubH Expr Environment
@@ -35,7 +38,8 @@ data Frame = HBody Expr | BodyH Expr Environment
            | HGt Expr | GtH Expr Environment
            | HIf Expr Expr Environment
            | HApp Expr | AppH Expr Environment
-           | HPush Int Int Environment
+           | HPush Expr Expr Environment
+           | HDuplicate Expr Environment
            deriving (Show, Eq)
 
 
@@ -113,21 +117,58 @@ eval ((TmInt n),env1,(LtH e env2):k) = (e,env2,(HLt (TmInt n)) : k)
 eval ((TmInt m),env,(HLt (TmInt n)):k) | n < m = (TmTrue,[],k)
                                              | otherwise = (TmFalse,[],k)
 
-
-
-
-
-
 -- Evaluation rules for less than oeprator
 eval ((TmGt e1 e2),env,k) = (e1,env,(GtH e2 env):k)
 eval ((TmInt n),env1,(GtH e env2):k) = (e,env2,(HGt (TmInt n)) : k)
 eval ((TmInt m),env,(HGt (TmInt n)):k) | n > m = (TmTrue,[],k)
                                             | otherwise = (TmFalse,[],k)
 
--- Evaluatio rules for if then else
+-- Evaluation rules for if then else
 eval ((TmIf e1 e2 e3), env, k) = (e1, env, (HIf e2 e3 env):k)
 eval (TmTrue, env1, (HIf e2 e3 env2):k) = (e2, env2, k)
 eval (TmFalse, env1, (HIf e2 e3 env2):k) = (e3, env2, k)
+
+
+-- Evaluation rules for push
+eval ((TmPush element index e3), env, k) = ((TmInt index), env, (HPush (TmInt element) e3 env) :k)
+eval ((TmInt n), env1, (HPush (TmInt m) e3 env2):k) = ((TmInts m e3), env2, k)
+
+
+-- Evaluation rules for let
+eval ((TmLet x typ e1),env,k) = (e1,env,(HLet x typ env):k)
+eval (v,env1,(HLet x typ env2):k) | isValue v = (v, env2, k)
+
+
+
+
+-- Evaluation rules for duplicate
+eval ((TmDuplicate e1), env, k) = (e1, env, (HDuplicate e1 env):k)
+eval (TmInts value p1, env1, (HDuplicate (TmInts e2 ) env2):k)) = (TmInts e2 e2, env2, k)
+
+
+--
+-- eval ((TmAdd e1 e2), env, k) = (e1, env, (AddH e2 env):k)
+-- eval ((TmInt n), env1, (AddH e env2):k) = (e, env2, (HAdd (TmInt n)):k )
+-- eval ((TmInt m), env, (HAdd (TmInt n)) : k) = (TmInt (1 + 1), [], k)
+
+
+-- Evaluation rules for length
+-- eval ((TmLength (TmInts n e)), env, k) = (e, env, (LengthH (TmAdd (TmInt 1) e) env):k )
+-- eval ((TmInts n (TmInt q)), env1, (LengthH (TmInt p) env2):k) = (TmInt q, env2, (HLength (TmInt n) :k))
+-- eval ((TmInts n q), env1, (LengthH p env2):k) = (q, env2, (LengthH (TmAdd (TmInt 1) q) env2 :k))
+-- eval ((TmInt n), env1, (HLength p):k) = ((TmInt (1)), [], k)
+
+
+
+-- eval ((TmLength (TmInts n e)), env, k) = (e, env, (LengthH (TmInt n) env):k )
+-- eval ((TmInts n (TmInt q)), env1, (LengthH (TmInt p) env2):k) = (TmInt q, env2, (HLength (TmInt n) :k))
+-- eval ((TmInts n q), env1, (LengthH (TmInt p) env2):k) = (q, env2, (LengthH (TmInt n) env2 :k))
+-- eval ((TmInt n), env1, (HLength (TmInt p)):k) = ((TmInt (1 + 1)), [], k)
+
+-- eval ((TmInt n), env1, (LengthH l@(TmInt p) env2):k) = ((TmInt p), env2, (HLength (TmInt n)):k)
+-- eval ((TmInt n), env, (HLength (TmInt p)):k) = (TmInt (1), [], k)
+
+
 
 
 
@@ -218,17 +259,17 @@ evalLoop e = evalLoop' (e,[],[])
 
 
 
+generateInts :: Expr -> [Int]
+generateInts (TmInt a) = a : []
+generateInts (TmInts (a) b) = a : generateInts b
+
 
 unparse :: Expr -> String
 unparse (TmInt n) = show n
+unparse l@(TmInts x y) = show (generateInts l )
 unparse (TmTrue) = "true"
 unparse (TmFalse) = "false"
 --unparse (TmStream) = "value"
-unparse (TmPrefix e) = "prefix value"
-unparse (TmCopy e) = "copy value"
-unparse (TmStrmArith e) = "arithmetic value"
-unparse (TmAccum e) = "accum value"
-unparse (TmFib e) = "fib value"
 unparse _ = "Unknown"
 
 
