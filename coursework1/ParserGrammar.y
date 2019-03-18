@@ -53,9 +53,10 @@ import LexerTokens
 %right end
 %right print
 %left splitAt
-%left duplicate
+%right length
+%right duplicate
 %left reverse
-%left length
+
 %right let
 %left APP
 %left push
@@ -69,7 +70,7 @@ import LexerTokens
 %left '/' '*'
 %left '<' '>'
 %left ';'
-%left ','
+%right ','
 
 
 
@@ -93,9 +94,10 @@ Exp : begin Exp end                               {TmBody $2}
     | Exp '/' Exp                                 {TmDiv $1 $3}
     | Exp '<' Exp                                 {TmLt $1 $3}
     | Exp '>' Exp                                 {TmGt $1 $3}
+    | Exp ';' Exp                                 {TmLine $1 $3}
     | lam '(' var ':' DataType ')' Exp            {TmLambda $3 $5 $7}
     | Exp Exp %prec APP                           {TmApp $1 $2}
-    | int ',' Exp                                 {TmInts $1 $3}
+    | Exp ',' Exp                                   {TmInts $1 $3}
     | int                                         {TmInt $1}
     | var                                         {TmVar $1}
     | true                                        {TmTrue}
@@ -132,8 +134,8 @@ type TyEnvironment = [ (String, Expr) ]
 type Environment = [ (String, Expr) ]
 
 
-data Expr = TmBody Expr | TmIf Expr Expr Expr | TmInts Int Expr | TmGt Expr Expr | TmLt Expr Expr
-            | TmAdd Expr Expr | TmSub Expr Expr | TmMult Expr Expr | TmDiv Expr Expr
+data Expr = TmBody Expr | TmIf Expr Expr Expr | TmInts Expr Expr | TmGt Expr Expr | TmLt Expr Expr
+            | TmAdd Expr Expr | TmSub Expr Expr | TmMult Expr Expr | TmDiv Expr Expr | TmLine Expr Expr
             | TmGetStream | TmReverse Expr | TmLength Expr | TmInt Int | TmComma  | TmTrue | TmFalse
             | TmPush Int Int Expr | TmApp Expr Expr | TmLambda String DataType Expr
             | TmPrint Expr | TmEnd | TmVar String | TmMerge Expr Expr | TmSplitAt Int Expr | TmDuplicate Expr
