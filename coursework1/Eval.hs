@@ -141,31 +141,20 @@ eval (v,env1,(HLet x typ env2):k) | isValue v = (v, env2, k)
 
 
 -- closure property for lambda
-eval((TmLambda x type e), env, k) = ((Cl x type e env), [], k)
+eval((TmLambda x typ e), env, k) = ((Cl x typ e env), [], k)
 
 
 -- Evaluation rules for application
-eval(TmApp e1 e2), env, k) = (e1, env, (AppH e2 env):k)
-eval(v, env1, (AppH e env2):k) | isValue v = (e. update env2 x v, k)
+eval((TmApp e1 e2), env, k) = (e1, env, (AppH e2 env):k)
+eval(v, env1, (AppH e env2):k) | isValue v = (e, env2, (HApp v):k)
+eval(v, env1, (HApp (Cl x typ e env2)):k) = (e, update env2 x v, k)
 
 
 -- Evaluation rules for duplicate
--- eval (TmDuplicate (TmInts x e), env, k) = (TmInt x, env, (HDuplicate e env):k)
--- eval (TmInt x, env1, (HDuplicate (TmInts n e2 ) env2):k) = (TmInts x (TmInts n e2 ), env2, (HDuplicate e2 env1):k)
--- eval (TmInts x (TmInts n e1 ), env1, (HDuplicate e2 env2):k) = (TmInts x e2, env2, (HDuplicate e2 env1):k)
--- eval (TmInts x (TmInt n), env1, (HDuplicate e2 env2):k) = (TmInts x e2, env2, (HDuplicate e2 env1):k)
-
---
--- eval ((TmAdd e1 e2), env, k) = (e1, env, (AddH e2 env):k)
--- eval ((TmInt n), env1, (AddH e env2):k) = (e, env2, (HAdd (TmInt n)):k )
--- eval ((TmInt m), env, (HAdd (TmInt n)) : k) = (TmInt (1 + 1), [], k)
-
-
--- Evaluation rules for length
--- eval ((TmLength (TmInts n e)), env, k) = (e, env, (LengthH (TmAdd (TmInt 1) e) env):k )
--- eval ((TmInts n (TmInt q)), env1, (LengthH (TmInt p) env2):k) = (TmInt q, env2, (HLength (TmInt n) :k))
--- eval ((TmInts n q), env1, (LengthH p env2):k) = (q, env2, (LengthH (TmAdd (TmInt 1) q) env2 :k))
--- eval ((TmInt n), env1, (HLength p):k) = ((TmInt (1)), [], k)
+eval (TmDuplicate (TmInts x e), env, k) = (TmInt x, env, (HDuplicate e env):k)
+eval (TmInt x, env1, (HDuplicate (TmInts n e2 ) env2):k) = (TmInts x (TmInts n e2 ), env2, (HDuplicate e2 env1):k)
+eval (TmInts x (TmInts n e1 ), env1, (HDuplicate e2 env2):k) = (TmInts x e2, env2, (HDuplicate e2 env1):k)
+eval (TmInts x (TmInt n), env1, (HDuplicate e2 env2):k) = (TmInts x e2, env2, (HDuplicate e2 env1):k)
 
 
 eval ((TmLength (TmInts n e)),env,(HLength (TmInt m)):k) = (TmLength (e), env, (HLength (TmInt (m+1))):k)

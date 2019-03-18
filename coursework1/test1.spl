@@ -1,1 +1,1 @@
-( \ (x : Int) (if (( \(x : Int) true ) 4 ) then x else x + 1 fi)) 7
+( \ (x : Int) (if (( \(x : Int) x > 8 ) 4 ) then x else x + 1 fi)) 7

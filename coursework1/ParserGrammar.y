@@ -137,7 +137,7 @@ data Expr = TmBody Expr | TmIf Expr Expr Expr | TmInts Int Expr | TmGt Expr Expr
             | TmGetStream | TmReverse Expr | TmLength Expr | TmInt Int | TmComma  | TmTrue | TmFalse
             | TmPush Int Int Expr | TmApp Expr Expr | TmLambda String DataType Expr
             | TmPrint Expr | TmEnd | TmVar String | TmMerge Expr Expr | TmSplitAt Int Expr | TmDuplicate Expr
-            | TmLet String DataType Expr | Cl Expr Expr Expr Environment
+            | TmLet String DataType Expr | Cl String DataType Expr Environment
 
             deriving (Show, Eq)
 }
