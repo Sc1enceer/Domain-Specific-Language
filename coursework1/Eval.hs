@@ -140,11 +140,16 @@ eval (v,env1,(HLet x typ env2):k) | isValue v = (v, env2, k)
 
 
 
+-- closure property for lambda
+eval((TmLambda x type e), env, k) = ((Cl x type e env), [], k)
+
+
 
 -- Evaluation rules for duplicate
-eval ((TmDuplicate e1), env, k) = (e1, env, (HDuplicate e1 env):k)
-eval (TmInts value p1, env1, (HDuplicate (TmInts e2 ) env2):k)) = (TmInts e2 e2, env2, k)
-
+-- eval (TmDuplicate (TmInts x e), env, k) = (TmInt x, env, (HDuplicate e env):k)
+-- eval (TmInt x, env1, (HDuplicate (TmInts n e2 ) env2):k) = (TmInts x (TmInts n e2 ), env2, (HDuplicate e2 env1):k)
+-- eval (TmInts x (TmInts n e1 ), env1, (HDuplicate e2 env2):k) = (TmInts x e2, env2, (HDuplicate e2 env1):k)
+-- eval (TmInts x (TmInt n), env1, (HDuplicate e2 env2):k) = (TmInts x e2, env2, (HDuplicate e2 env1):k)
 
 --
 -- eval ((TmAdd e1 e2), env, k) = (e1, env, (AddH e2 env):k)
@@ -159,16 +164,10 @@ eval (TmInts value p1, env1, (HDuplicate (TmInts e2 ) env2):k)) = (TmInts e2 e2,
 -- eval ((TmInt n), env1, (HLength p):k) = ((TmInt (1)), [], k)
 
 
-
--- eval ((TmLength (TmInts n e)), env, k) = (e, env, (LengthH (TmInt n) env):k )
--- eval ((TmInts n (TmInt q)), env1, (LengthH (TmInt p) env2):k) = (TmInt q, env2, (HLength (TmInt n) :k))
--- eval ((TmInts n q), env1, (LengthH (TmInt p) env2):k) = (q, env2, (LengthH (TmInt n) env2 :k))
--- eval ((TmInt n), env1, (HLength (TmInt p)):k) = ((TmInt (1 + 1)), [], k)
-
--- eval ((TmInt n), env1, (LengthH l@(TmInt p) env2):k) = ((TmInt p), env2, (HLength (TmInt n)):k)
--- eval ((TmInt n), env, (HLength (TmInt p)):k) = (TmInt (1), [], k)
-
-
+eval ((TmLength (TmInts n e)),env,(HLength (TmInt m)):k) = (TmLength (e), env, (HLength (TmInt (m+1))):k)
+eval ((TmLength (TmInts n e)), env, k) = (TmLength(e),env,(HLength (TmInt 1)):k)
+eval ((TmLength (TmInt n)),env,(HLength (TmInt m)):k) = (TmInt (m+1), env, k)
+eval ((TmLength (TmInt n)),env,k) = (TmInt 1, env, k)
 
 
 
@@ -267,6 +266,7 @@ generateInts (TmInts (a) b) = a : generateInts b
 unparse :: Expr -> String
 unparse (TmInt n) = show n
 unparse l@(TmInts x y) = show (generateInts l )
+--unparse l@(TmLines x y) = map(generateInts) l
 unparse (TmTrue) = "true"
 unparse (TmFalse) = "false"
 --unparse (TmStream) = "value"

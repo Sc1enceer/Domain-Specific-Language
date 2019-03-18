@@ -93,7 +93,7 @@ Exp : begin Exp end                               {TmBody $2}
     | Exp '/' Exp                                 {TmDiv $1 $3}
     | Exp '<' Exp                                 {TmLt $1 $3}
     | Exp '>' Exp                                 {TmGt $1 $3}
-    | lam '(' Exp ':' Exp ')' Exp                 {TmLambda $3 $5 $7}
+    | lam '(' var ':' DataType ')' Exp            {TmLambda $3 $5 $7}
     | Exp Exp %prec APP                           {TmApp $1 $2}
     | int ',' Exp                                 {TmInts $1 $3}
     | int                                         {TmInt $1}
@@ -104,6 +104,7 @@ Exp : begin Exp end                               {TmBody $2}
     | print Exp                                   {TmPrint $2}
     | end                                         {TmEnd}
     | '(' Exp ')'                                 { $2 }
+
 
 
 
@@ -134,7 +135,7 @@ type Environment = [ (String, Expr) ]
 data Expr = TmBody Expr | TmIf Expr Expr Expr | TmInts Int Expr | TmGt Expr Expr | TmLt Expr Expr
             | TmAdd Expr Expr | TmSub Expr Expr | TmMult Expr Expr | TmDiv Expr Expr
             | TmGetStream | TmReverse Expr | TmLength Expr | TmInt Int | TmComma  | TmTrue | TmFalse
-            | TmPush Int Int Expr | TmApp Expr Expr | TmLambda Expr Expr Expr
+            | TmPush Int Int Expr | TmApp Expr Expr | TmLambda String DataType Expr
             | TmPrint Expr | TmEnd | TmVar String | TmMerge Expr Expr | TmSplitAt Expr | TmDuplicate Expr
             | TmLet String DataType Expr | Cl Expr Expr Expr Environment
 
