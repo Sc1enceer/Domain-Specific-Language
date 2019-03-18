@@ -84,7 +84,7 @@ Exp : begin Exp end                               {TmBody $2}
     | getStream                                   {TmGetStream}
     | duplicate Exp                               {TmDuplicate $2}
     | Exp '++' Exp                                {TmMerge $1 $3}
-    | splitAt Exp                                 {TmSplitAt $2}
+    | splitAt int Exp                             {TmSplitAt $2 $3}
     | reverse Exp                                 {TmReverse $2}
     | length Exp                                  {TmLength $2}
     | Exp '+' Exp                                 {TmAdd $1 $3}
@@ -136,7 +136,7 @@ data Expr = TmBody Expr | TmIf Expr Expr Expr | TmInts Int Expr | TmGt Expr Expr
             | TmAdd Expr Expr | TmSub Expr Expr | TmMult Expr Expr | TmDiv Expr Expr
             | TmGetStream | TmReverse Expr | TmLength Expr | TmInt Int | TmComma  | TmTrue | TmFalse
             | TmPush Int Int Expr | TmApp Expr Expr | TmLambda String DataType Expr
-            | TmPrint Expr | TmEnd | TmVar String | TmMerge Expr Expr | TmSplitAt Expr | TmDuplicate Expr
+            | TmPrint Expr | TmEnd | TmVar String | TmMerge Expr Expr | TmSplitAt Int Expr | TmDuplicate Expr
             | TmLet String DataType Expr | Cl Expr Expr Expr Environment
 
             deriving (Show, Eq)

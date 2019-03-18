@@ -144,6 +144,10 @@ eval (v,env1,(HLet x typ env2):k) | isValue v = (v, env2, k)
 eval((TmLambda x type e), env, k) = ((Cl x type e env), [], k)
 
 
+-- Evaluation rules for application
+eval(TmApp e1 e2), env, k) = (e1, env, (AppH e2 env):k)
+eval(v, env1, (AppH e env2):k) | isValue v = (e. update env2 x v, k)
+
 
 -- Evaluation rules for duplicate
 -- eval (TmDuplicate (TmInts x e), env, k) = (TmInt x, env, (HDuplicate e env):k)
