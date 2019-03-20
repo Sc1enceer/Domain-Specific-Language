@@ -39,7 +39,7 @@ data Frame = HBody Expr | BodyH Expr Environment
            | HIf Expr Expr Environment
            | HApp Expr | AppH Expr Environment
            | HPush Expr Expr Environment
-           | HDuplicate Expr
+           | HDuplicate Expr | DuplicateH Expr Environment
            | HSplitAt Expr
            | HLine Expr | LineH Expr Environment
            deriving (Show, Eq)
@@ -71,6 +71,7 @@ isValue (TmInts _ _) = True
 isValue (TmInt _) = True
 isValue TmTrue = True
 isValue TmFalse = True
+isValue (TmLine _ _) = True
 isValue (Cl _ _ _ _) = True
 isValue (TmGetStream) =  True
 isValue _ = False
@@ -133,7 +134,7 @@ eval (TmFalse, env1, (HIf e2 e3 env2):k) = (e3, env2, k)
 
 -- Evaluation rules for push
 eval ((TmPush element index e3), env, k) = ((TmInt index), env, (HPush (TmInt element) e3 env) :k)
-eval ((TmInt n), env1, (HPush (TmInt m) e3 env2):k) = ((TmInts (TmInt m) e3), env2, k)
+eval ((TmInt n), env1, (HPush (TmInt m) e3 env2):k) = ((TmInts (m) e3), env2, k)
 
 
 -- Evaluation rules for let
@@ -153,22 +154,68 @@ eval(v, env1, (HApp (Cl x typ e env2)):k) = (e, update env2 x v, k)
 
 
 -- Evaluation rules for duplicate
-eval (TmDuplicate (TmInts n e ), env, (HDuplicate (TmInts w s)):k) = (TmDuplicate (e), env, (HDuplicate ( TmInts (TmInts w s) (n))):k)
-eval (TmDuplicate (TmInts n e), env, k) = (TmDuplicate (e), env, (HDuplicate (TmInts (TmInts n e) (n))):k)
-eval (TmDuplicate (TmInt n), env, (HDuplicate (TmInts m w)):k) = (TmInts (TmInts m w) (TmInt n), env, k)
-eval (TmDuplicate (TmInt n), env, k) = (TmInts (TmInt n) (TmInt n), env, k)
+-- eval (TmDuplicate (TmInts n e ), env, (HDuplicate (TmInts x (TmInts q p))):k) = (TmDuplicate (e), env, (HDuplicate ( TmInts (x) (TmInts n (TmInts q p) )):k))
+-- eval (TmDuplicate (TmInts n e), env, k) = (TmDuplicate (e), env, (HDuplicate (TmInts (n) (TmInts n e)):k))
+-- eval (TmDuplicate (TmInt n), env, (HDuplicate (TmInts x (TmInts q p))):k) = (TmInts ((x)) (TmInts (n) (TmInts q p)), env, k)
+-- eval (TmDuplicate (TmInt n), env, k) = (TmInts (n) (TmInt n), env, k)
 
 
+-- eval (TmDuplicate (TmInts n e ), env, (HDuplicate (TmInts w s)):k) = (TmDuplicate (e), env, (HDuplicate ( TmInts (TmInts w s) (n))):k)
+-- eval (TmDuplicate (TmInts n e), env, k) = (TmDuplicate (e), env, (HDuplicate (TmInts (TmInts n e) (n))):k)
+-- eval (TmDuplicate (TmInt n), env, (HDuplicate (TmInts m w)):k) = (TmInts (TmInts m w) (TmInt n), env, k)
+-- eval (TmDuplicate (TmInt n), env, k) = (TmInts (TmInt n) (TmInt n), env, k)
+
+eval (TmDuplicate (TmInts n e), env, k)= (duplicateList (TmInts n e) (TmInts n e), env, k )
+eval (TmDuplicate (TmInt n), env, k) = (TmInts (n) (TmInt n), env, k)
+eval ((TmDuplicate (e),env,k)) = (TmDuplicate((evalLoop e)),env,k)
 -- Evaluation rules for length
-eval ((TmLength (TmInts n e)),env,(HLength (TmInt m)):k) = (TmLength (e), env, (HLength (TmInt (m+1))):k)
-eval ((TmLength (TmInts n e)), env, k) = (TmLength(e),env,(HLength (TmInt 1)):k)
-eval ((TmLength (TmInt n)),env,(HLength (TmInt m)):k) = (TmInt (m+1), env, k)
-eval ((TmLength (TmInt n)),env,k) = (TmInt 1, env, k)
 
 
+eval(TmLength (TmInt n), env, (HLength (TmInt m)):k) = (TmInt (1), env, k)
+eval(TmLength (TmInts (n) e), env ,k) = (TmInt (findLength (TmInts n e)), env, k)
+eval ((TmLength (TmInt n)),env,k) = ((TmInt 1), env, k)
+eval ((TmLength(e),env,k)) = (TmLength((evalLoop e)),env,k)
+
+
+eval (TmSplitAt (TmInt n) (TmInts m e), env, k) = eval (evalLoop (TmLine (splitBefore (TmInts m e) n) (splitAfter (TmInts m e) n)), env, k)
+eval ((TmSplitAt n (e),env,k)) = eval (TmSplitAt (evalLoop (n)) (evalLoop (e)), env, k)
+
+-- eval ((TmLength (TmInts (n) e)),env,(HLength (TmInt m)):k) = (TmLength (e), env, (HLength (TmInt (m+1))):k)
+-- eval ((TmLength (TmInts n e)), env, k) = (TmLength(e),env,(HLength (TmInt 1)):k)
+-- eval ((TmLength (TmInt n)),env,(HLength (TmInt m)):k) = (TmInt (m+1), env, k)
+-- eval ((TmLength (TmInt n)),env,k) = (TmInt 1, env, k)
+-- eval ((TmLength(e),env,k)) = (TmLength((evalLoop e)),env,k)
+
+
+-- --eval ((TmLength (TmInts (TmInts n e1) e2)),env,(HLength (TmInt m)):k) = (TmLength (e2), env, (HLength (TmInt (m + 1))):k)
+-- eval ((TmLength (TmInts n e),env,(HLength (TmInt m)):k)) = (TmLength (e), env, (HLength (TmInt (m+1)):k))
+-- eval ((TmLength e1 e2), [], []) = (TmAdd (TmLength e1) (TmLength e2), env)
+-- -- eval ((TmLength (TmInt n)),env,k) = (TmInt 1, env, k)
+-- eval ((TmLength(e),env,k)) = (TmLength((evalLoop e)),env,k)
 
 -- Evaluation rules for lines
+splitBefore:: Expr -> Int -> Expr
+splitBefore (TmInts n e) c
+                    | c /= 1     =  (TmInts n (splitBefore e (c-1)))
+                    | otherwise  =  (TmInt n)
 
+splitAfter :: Expr -> Int -> Expr
+splitAfter (TmInts n e) c
+                    | c /= 1     =  splitAfter e (c-1)
+                    | otherwise  =  e
+
+
+findLength :: Expr -> Int
+findLength (TmInt n) = 1
+findLength (TmInts (n) e) = 1 + findLength e
+
+duplicateHelper :: Expr -> Expr -> Expr
+duplicateHelper (TmInt n) (TmInt m) = (TmInts n (TmInt m))
+duplicateHelper (TmInts n e) (TmInt m) = TmInts n (duplicateHelper e (TmInt m))
+
+duplicateList :: Expr -> Expr -> Expr
+duplicateList l1@(TmInts n e) l2@(TmInt m) = duplicateHelper l1 l2
+duplicateList l1@(TmInts n e) l2@(TmInts m e1) = duplicateList (duplicateHelper l1 (TmInt m)) e1
 
 
 -- Evaluation rules for splitAt
@@ -176,8 +223,6 @@ eval ((TmLength (TmInt n)),env,k) = (TmInt 1, env, k)
 
 -- Function to iterate the small step reduction to termination
 evalLoop :: Expr -> Expr
-evalLoop l@(e1(e2)) | (isValue e2)  = evalLoop' (l,[],[])
-                   | otherwise     = evalLoop (e1 (evalLoop e2))
 evalLoop e = evalLoop' (e,[],[])
   where evalLoop' (e,env,k) = if (e' == e) && (isValue e') && k' == [] then e' else evalLoop' (e',env',k')
                        where (e',env',k') = eval (e,env,k)
@@ -265,13 +310,13 @@ evalLoop e = evalLoop' (e,[],[])
 
 generateInts :: Expr -> [Int]
 generateInts (TmInt a) = a : []
-generateInts (TmInts a b) = generateInts a ++ generateInts b
+generateInts (TmInts a b) = a : generateInts b
 
 
 unparse :: Expr -> String
 unparse (TmInt n) = show n
 unparse l@(TmInts x y) = show (generateInts l )
---unparse l@(TmLines x y) = map(generateInts) l
+-- unparse l@(TmLine x y) = map(generateInts) l
 unparse (TmTrue) = "true"
 unparse (TmFalse) = "false"
 unparse (TmLine x y) = show (generateInts x) ++ show (generateInts y)

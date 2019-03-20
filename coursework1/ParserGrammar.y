@@ -85,7 +85,7 @@ Exp : begin Exp end                               {TmBody $2}
     | getStream                                   {TmGetStream}
     | duplicate Exp                               {TmDuplicate $2}
     | Exp '++' Exp                                {TmMerge $1 $3}
-    | splitAt int Exp                             {TmSplitAt $2 $3}
+    | splitAt Exp Exp                             {TmSplitAt $2 $3}
     | reverse Exp                                 {TmReverse $2}
     | length Exp                                  {TmLength $2}
     | Exp '+' Exp                                 {TmAdd $1 $3}
@@ -97,7 +97,7 @@ Exp : begin Exp end                               {TmBody $2}
     | Exp ';' Exp                                 {TmLine $1 $3}
     | lam '(' var ':' DataType ')' Exp            {TmLambda $3 $5 $7}
     | Exp Exp %prec APP                           {TmApp $1 $2}
-    | Exp ',' Exp                                   {TmInts $1 $3}
+    | int ',' Exp                                 {TmInts $1 $3}
     | int                                         {TmInt $1}
     | var                                         {TmVar $1}
     | true                                        {TmTrue}
@@ -134,11 +134,11 @@ type TyEnvironment = [ (String, Expr) ]
 type Environment = [ (String, Expr) ]
 
 
-data Expr = TmBody Expr | TmIf Expr Expr Expr | TmInts Expr Expr | TmGt Expr Expr | TmLt Expr Expr
+data Expr = TmBody Expr | TmIf Expr Expr Expr | TmInts Int Expr | TmGt Expr Expr | TmLt Expr Expr
             | TmAdd Expr Expr | TmSub Expr Expr | TmMult Expr Expr | TmDiv Expr Expr | TmLine Expr Expr
             | TmGetStream | TmReverse Expr | TmLength Expr | TmInt Int | TmComma  | TmTrue | TmFalse
             | TmPush Int Int Expr | TmApp Expr Expr | TmLambda String DataType Expr
-            | TmPrint Expr | TmEnd | TmVar String | TmMerge Expr Expr | TmSplitAt Int Expr | TmDuplicate Expr
+            | TmPrint Expr | TmEnd | TmVar String | TmMerge Expr Expr | TmSplitAt Expr Expr | TmDuplicate Expr
             | TmLet String DataType Expr | Cl String DataType Expr Environment
 
             deriving (Show, Eq)
