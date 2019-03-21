@@ -36,7 +36,6 @@ $white+       ;
   \}                        { tok (\p s -> TokenRBrckt p)}
   \,                        { tok (\p s -> TokenComma p)}
   \;                        { tok (\p s -> TokenSemiCol p)}
-
   if                        { tok (\p s -> TokenIf p)}
   else                      { tok (\p s -> TokenElse p)}
   then                      { tok (\p s -> TokenThen p)}
@@ -55,7 +54,7 @@ $white+       ;
   last                      { tok (\p s -> TokenLast p) }
   duplicate                 { tok (\p s -> TokenDuplicate p) }
   splitAt                   { tok (\p s -> TokenSplitAt p) }
-  map                       { tok (\p s -> TokenMap p) }
+  map                       { tok (\p s -> TokenMap p) }  
   listsArith                { tok (\p s -> TokenListsArith p) }
   $alpha [$alpha $digit \_ \’]*   { tok (\p s -> TokenVar p s) }
 
@@ -71,6 +70,7 @@ data LexerToken =
   TokenTypeInt        AlexPosn          |
   TokenInt            AlexPosn Int      |
   TokenTrue           AlexPosn          |
+  TokenListsArith     AlexPosn          |
   TokenFalse          AlexPosn          |
   TokenBegin          AlexPosn          |
   TokenEnd            AlexPosn          |
@@ -108,15 +108,7 @@ data LexerToken =
   TokenSplitAt        AlexPosn          |
   TokenHead           AlexPosn          |
   TokenLast           AlexPosn          |
-  TokenMap            AlexPosn          |
-  TokenListsArith     AlexPosn        
-
-
-
-
-
-
-
+  TokenMap            AlexPosn          
   deriving (Eq,Show)
 
 tokenPosn :: LexerToken -> String
@@ -163,5 +155,4 @@ tokenPosn (TokenHead (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenLast (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenMap (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenListsArith (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-
 }

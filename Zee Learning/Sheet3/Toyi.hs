@@ -23,4 +23,7 @@ noParse e = do let err =  show e
                putStrLn("----------------")
                main
 
+         --      TmApp (TmApp (TmLambda "x" TyInt (TmLambda "y" TyInt (TmAdd (TmVar "x") (TmVar "y")))) (TmInt 1)) (TmInt 2)
+          --            TmApp (TmLambda "x" TyInt (TmLambda "y" TyInt (TmAdd (TmVar "x") (TmVar "y")))) (TmInts 1 (TmInt 2))
 
+       --TmApp (TmLambda "x" TyInt (TmLambda "y" TyInt (TmAdd (TmVar "x") (TmVar "y")))) (TmApp (TmInt 1) (TmInt 2))

@@ -4,27 +4,6 @@ import System.IO
 import Control.Monad
 
 
---
--- data DataType = TyInt | TyBoolyVar
---               deriving(Show, Eq)
---
--- data Line = TmLines | TmLine
---
--- type TyEnvironment = [ (String, Expr) ]
--- type ExprEnvironment = [ (String, Expr) ]
---
--- data Expr = TmBody Expr | TmIf Expr Expr Expr | TmGt Expr Expr | TmLt Expr Expr
---             | TmAdd Expr Expr | TmSub Expr Expr | TmMult Expr Expr | TmDiv Expr Expr
---             | TmGetStream | TmReverse Expr | TmLength Expr | TmInts Int Expr | TmInt Int | TmComma  | TmTrue | TmFalse
---             | TmPush Int Int Expr | TmApp Expr Expr
---             | TmPrint Expr | TmEnd | TmVar String
---             | TmReadL Expr | TmPrefix Expr | TmStrmArith Expr
---             | TmCopy Expr | TmAccum Expr | TmFib Expr
---             | Cl Expr Environment
-
--- data Return = D1 [Int] | D2 [[Int]]
---           deriving (Show, Eq)
-
 data Frame = HBody Expr | BodyH Expr Environment
            | HPrint Expr | PrintH Expr Environment
            | HLet String Environment
@@ -45,6 +24,7 @@ data Frame = HBody Expr | BodyH Expr Environment
            | HLast Expr
            | HMap Expr | MapH Expr
            | HReverse Expr | ReverseH Expr
+           | HListArith Expr | ListArithH Expr
            deriving (Show, Eq)
 
 
@@ -171,9 +151,8 @@ eval(v, env1, (HApp (Cl x typ e env2)):k) = (e, update env2 x v, k)
 eval (TmDuplicate (TmInts n e), env, k)= (duplicateList (TmInts n e) (TmInts n e), env, k )
 eval (TmDuplicate (TmInt n), env, k) = (TmInts (n) (TmInt n), env, k)
 eval ((TmDuplicate (e),env,k)) = (TmDuplicate((evalLoop e)),env,k)
+
 -- Evaluation rules for length
-
-
 eval(TmLength (TmInt n), env, (HLength (TmInt m)):k) = (TmInt (1), env, k)
 eval(TmLength (TmInts (n) e), env ,k) = (TmInt (findLength (TmInts n e)), env, k)
 eval ((TmLength (TmInt n)),env,k) = ((TmInt 1), env, k)
@@ -196,41 +175,45 @@ eval (TmLast (TmInts (n) e), env, k) = (TmLast(e), env, (HLast (TmInt n)):k)
 eval (TmLast (TmInt n), env, k) = (TmInt n, env, k)
 
 
-
--- -- closure property for lambda
--- eval((TmLambda x typ e), env, k) = ((Cl x typ e env), [], k)
-
-
--- -- Evaluation rules for application
--- eval((TmApp e1 e2), env, k) = (e1, env, (AppH e2 env):k)
--- eval(v, env1, (AppH e env2):k) | isValue v = (e, env2, (HApp v):k)
--- eval(v, env1, (HApp (Cl x typ e env2)):k) = (e, update env2 x v, k)
-
 -- Evaluation rules for map
-
-
 eval (TmMap (TmLambda x typ e1) (TmInts n1 e), env, (HMap (TmInts n2 e2):k)) = (TmMap (TmLambda x typ e1) e, ("Value", (evalLoop (TmApp (TmLambda x typ e1) (TmInt n1)))) : env, (HMap e):k)
 eval (TmMap (TmLambda x typ e1) (TmInt n1), env, (HMap (TmInt n2):k)) = (TmMap (TmInt n1) (TmInt n1), ("Value", (evalLoop (TmApp (TmLambda x typ e1) (TmInt n1)))) : env, (MapH e1) : k)
 eval (TmMap (TmInt n) (TmInt n1), env, (MapH e1) : k) = (getValueFromEnvironment env, env, [])
 eval (TmMap (TmLambda x typ e1) expr, env, k) = (TmMap (TmLambda x typ e1) expr, env, (HMap expr):k )
 
 -- map (( \(x : Int) x * 3)) 1,2
+-- ( \ (x : Int) (if (( \(x : Int) true ) 4 ) then x else x + 1)) 7
 
 -- Evaluation rules for reverse
-
 eval (TmReverse (TmInts n e), env, (HReverse (TmInt n1)):k) = (TmReverse (e), ("Value", (TmInt n )): env, HReverse (TmInt n):k)
-
-
 eval (TmReverse (TmInt n) , env, (HReverse (TmInt n1)):k) = (TmReverse (TmInt n), ("Value", (TmInt n)) : env, ReverseH (TmInt n):k)
-
-
 eval (TmReverse (TmInt n ), env , (ReverseH (TmInt n1)):k) = ((getValueFromEnvironment(env)) , [], [])
-
-
 eval (TmReverse (TmInts n e), env, k) = (TmReverse (e), ("Value", (TmInt n)) : env,  HReverse (TmInt n): k)
-
 eval ((TmReverse(e),env,k)) = (TmReverse((evalLoop e)),env,k)
 
+
+
+-- evaluation rules for lists arithmetic
+eval (TmListsArith (TmLambda x typ e1) (TmLine e2 e3), env, k) | (isValue e2) == False && (isValue e3) == False  = eval (TmListsArith (TmLambda x typ e1) (TmLine (evalLoop e2) (evalLoop e3)), env, k)
+                                                      | (isValue e2) == False    = eval (TmListsArith (TmLambda x typ e1) (TmLine (evalLoop e2) e3), env, k)
+                                                      | (isValue e3) == False    = eval (TmListsArith (TmLambda x typ e1) (TmLine (e2) (evalLoop e3)), env, k)
+
+eval (TmListsArith (TmLambda x typ e1) (TmLine (TmInts n1 e2)  (TmInts n2 e3)), env, (HListArith e4):k) = (TmListsArith (TmLambda x typ e1) (TmLine e2 e3), ("Value", evalLoop (TmApp (TmApp (TmLambda x typ e1) (TmInt n1)) (TmInt n2))) : env, (HListArith (TmLine e2 e3)) :k)
+
+eval (TmListsArith (TmLambda x typ e1) (TmLine (TmInt n1)  (TmInt n2)), env, (HListArith e2):k) = (TmListsArith (TmLambda x typ e1) (TmInt 1), ("Value", evalLoop (TmApp (TmApp (TmLambda x typ e1)  (TmInt n1)) (TmInt n2))) :env, (ListArithH e2):k)
+
+eval (TmListsArith (TmLambda x typ e1) e2, env, (ListArithH e3):k) = (getValueFromEnvironment env, env, [])
+
+eval (TmListsArith (TmLambda x typ e1) (TmLine e2 e3), env, k) = (TmListsArith (TmLambda x typ e1) (TmLine e2 e3), env, (HListArith (TmLine e2 e3) :k))
+
+-- eval (v,env1,(HLet x env2):k) | isValue v = (v, env2, k)
+
+
+                             
+
+-- evalLoop (TmApp (TmLambda x typ e1) (TmApp (TmInt n1) (TmInt n2))))
+--    TmApp (TmApp (TmLambda "x" TyInt (TmLambda "y" TyInt (TmAdd (TmVar "x") (TmVar "y")))) (TmInt 1)) (TmInt 2)
+-- TmListsArith    (TmLambda "x" TyInt (TmLambda "y" TyInt (TmAdd (TmVar "x") (TmVar "y")))) (TmLine (TmInts 1 (TmInts 2 (TmInt 3))) (TmInts 1 (TmInts 2 (TmInt 3))))
 
 -- findReverse :: Kontinuation -> Expr
 -- findReverse (ReverseH (TmInt n) : xs) = TmInts n (findReverse xs)
