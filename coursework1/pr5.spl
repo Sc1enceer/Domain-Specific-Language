@@ -1,0 +1,10 @@
+begin
+  let x = getStream
+  let m = reverse generateFibSequence
+  let n = length x
+  let counter = 0
+  while (counter < n)
+    let lines = readLines counter
+    print (multiplyLists lines)
+    counter++
+end

@@ -51,8 +51,12 @@ $white+       ;
   "->"                      { tok (\p s -> TokenArr p) }
   \++                       { tok (\p s -> TokenMerge p)}
   push                      { tok (\p s -> TokenPush p) }
+  head                      { tok (\p s -> TokenHead p) }
+  last                      { tok (\p s -> TokenLast p) }
   duplicate                 { tok (\p s -> TokenDuplicate p) }
-  splitAt                     { tok (\p s -> TokenSplitAt p) }
+  splitAt                   { tok (\p s -> TokenSplitAt p) }
+  map                       { tok (\p s -> TokenMap p) }
+  listsArith                { tok (\p s -> TokenListsArith p) }
   $alpha [$alpha $digit \_ \’]*   { tok (\p s -> TokenVar p s) }
 
 
@@ -101,7 +105,11 @@ data LexerToken =
   TokenPush           AlexPosn          |
   TokenDuplicate      AlexPosn          |
   TokenMerge          AlexPosn          |
-  TokenSplitAt        AlexPosn
+  TokenSplitAt        AlexPosn          |
+  TokenHead           AlexPosn          |
+  TokenLast           AlexPosn          |
+  TokenMap            AlexPosn          |
+  TokenListsArith     AlexPosn        
 
 
 
@@ -151,5 +159,9 @@ tokenPosn (TokenPush (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenMerge (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenDuplicate (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenSplitAt (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenHead (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenLast (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenMap (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenListsArith (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 
 }

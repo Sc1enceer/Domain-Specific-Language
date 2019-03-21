@@ -1,0 +1,9 @@
+begin
+  let x = getStream
+  let n = length x
+  let counter = 0
+  while (counter < n)
+    n = readLines counter
+    print (factorial "+" n)
+    counter++
+end

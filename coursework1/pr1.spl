@@ -1,0 +1,4 @@
+begin
+let x = getStream
+print (push 0 0 x)
+end

@@ -27,7 +27,7 @@ import Control.Monad
 
 data Frame = HBody Expr | BodyH Expr Environment
            | HPrint Expr | PrintH Expr Environment
-           | HLet String DataType Environment
+           | HLet String Environment
            | HAddL Expr | AddLH Expr Environment
            | HLength Expr | LengthH Expr Environment
            | HAdd Expr | AddH Expr Environment
@@ -42,6 +42,9 @@ data Frame = HBody Expr | BodyH Expr Environment
            | HDuplicate Expr | DuplicateH Expr Environment
            | HSplitAt Expr
            | HLine Expr | LineH Expr Environment
+           | HLast Expr
+           | HMap Expr | MapH Expr
+           | HReverse Expr | ReverseH Expr
            deriving (Show, Eq)
 
 
@@ -138,8 +141,8 @@ eval ((TmInt n), env1, (HPush (TmInt m) e3 env2):k) = ((TmInts (m) e3), env2, k)
 
 
 -- Evaluation rules for let
-eval ((TmLet x typ e1),env,k) = (e1,env,(HLet x typ env):k)
-eval (v,env1,(HLet x typ env2):k) | isValue v = (v, env2, k)
+eval ((TmLet x e1),env,k) = (e1,env,(HLet x env):k)
+eval (v,env1,(HLet x env2):k) | isValue v = (v, env2, k)
 
 
 
@@ -177,8 +180,62 @@ eval ((TmLength (TmInt n)),env,k) = ((TmInt 1), env, k)
 eval ((TmLength(e),env,k)) = (TmLength((evalLoop e)),env,k)
 
 
+-- Evaluation rules for splitAt
 eval (TmSplitAt (TmInt n) (TmInts m e), env, k) = eval (evalLoop (TmLine (splitBefore (TmInts m e) n) (splitAfter (TmInts m e) n)), env, k)
 eval ((TmSplitAt n (e),env,k)) = eval (TmSplitAt (evalLoop (n)) (evalLoop (e)), env, k)
+
+
+
+-- Evaluation rules for head
+eval (TmHead (TmInts (n) e), env, k) = (TmInt n, env, k)
+
+-- Evaluation rules for last
+eval (TmLast (TmInts (n) e), env, (HLast (TmInt m): k)) = (TmLast(e), env, (HLast (TmInt n)):k)
+eval (TmLast (TmInt (n)), env, (HLast (TmInt m): k)) = (TmInt n, env, k)
+eval (TmLast (TmInts (n) e), env, k) = (TmLast(e), env, (HLast (TmInt n)):k)
+eval (TmLast (TmInt n), env, k) = (TmInt n, env, k)
+
+
+
+-- -- closure property for lambda
+-- eval((TmLambda x typ e), env, k) = ((Cl x typ e env), [], k)
+
+
+-- -- Evaluation rules for application
+-- eval((TmApp e1 e2), env, k) = (e1, env, (AppH e2 env):k)
+-- eval(v, env1, (AppH e env2):k) | isValue v = (e, env2, (HApp v):k)
+-- eval(v, env1, (HApp (Cl x typ e env2)):k) = (e, update env2 x v, k)
+
+-- Evaluation rules for map
+
+
+eval (TmMap (TmLambda x typ e1) (TmInts n1 e), env, (HMap (TmInts n2 e2):k)) = (TmMap (TmLambda x typ e1) e, ("Value", (evalLoop (TmApp (TmLambda x typ e1) (TmInt n1)))) : env, (HMap e):k)
+eval (TmMap (TmLambda x typ e1) (TmInt n1), env, (HMap (TmInt n2):k)) = (TmMap (TmInt n1) (TmInt n1), ("Value", (evalLoop (TmApp (TmLambda x typ e1) (TmInt n1)))) : env, (MapH e1) : k)
+eval (TmMap (TmInt n) (TmInt n1), env, (MapH e1) : k) = (getValueFromEnvironment env, env, [])
+eval (TmMap (TmLambda x typ e1) expr, env, k) = (TmMap (TmLambda x typ e1) expr, env, (HMap expr):k )
+
+-- map (( \(x : Int) x * 3)) 1,2
+
+-- Evaluation rules for reverse
+
+eval (TmReverse (TmInts n e), env, (HReverse (TmInt n1)):k) = (TmReverse (e), ("Value", (TmInt n )): env, HReverse (TmInt n):k)
+
+
+eval (TmReverse (TmInt n) , env, (HReverse (TmInt n1)):k) = (TmReverse (TmInt n), ("Value", (TmInt n)) : env, ReverseH (TmInt n):k)
+
+
+eval (TmReverse (TmInt n ), env , (ReverseH (TmInt n1)):k) = ((getValueFromEnvironment(env)) , [], [])
+
+
+eval (TmReverse (TmInts n e), env, k) = (TmReverse (e), ("Value", (TmInt n)) : env,  HReverse (TmInt n): k)
+
+eval ((TmReverse(e),env,k)) = (TmReverse((evalLoop e)),env,k)
+
+
+-- findReverse :: Kontinuation -> Expr
+-- findReverse (ReverseH (TmInt n) : xs) = TmInts n (findReverse xs)
+-- findReverse [HReverse (TmInt n)] = TmInt n 
+-- findReverse (HReverse (TmInt n) : xs) = TmInts n (findReverse xs)
 
 -- eval ((TmLength (TmInts (n) e)),env,(HLength (TmInt m)):k) = (TmLength (e), env, (HLength (TmInt (m+1))):k)
 -- eval ((TmLength (TmInts n e)), env, k) = (TmLength(e),env,(HLength (TmInt 1)):k)
@@ -192,6 +249,19 @@ eval ((TmSplitAt n (e),env,k)) = eval (TmSplitAt (evalLoop (n)) (evalLoop (e)), 
 -- eval ((TmLength e1 e2), [], []) = (TmAdd (TmLength e1) (TmLength e2), env)
 -- -- eval ((TmLength (TmInt n)),env,k) = (TmInt 1, env, k)
 -- eval ((TmLength(e),env,k)) = (TmLength((evalLoop e)),env,k)
+
+getValueFromEnvironment :: [ (String, Expr) ] -> Expr
+getValueFromEnvironment [(str, TmInt n)] = TmInt n
+getValueFromEnvironment ((str, TmInt n):xs) = TmInts n (getValueFromEnvironment xs)
+
+-- reverseHelper2 :: Expr -> Expr -> Expr -> Expr
+-- reverseHelper2 (TmInt n) accum  = TmInts n accum
+
+-- reverseHelper1 :: Expr -> Expr -> Expr
+-- reverseHelper (TmInts n e) (TmInt n2) = reverseHelper2 (TmInt n2)  
+
+
+
 
 -- Evaluation rules for lines
 splitBefore:: Expr -> Int -> Expr

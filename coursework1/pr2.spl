@@ -1,0 +1,10 @@
+begin
+
+let x = getStream
+let m = (length x)/ 2
+
+if m > 1 then
+      print (splitAt m (duplicate x))
+         else
+      print ("Bugs")
+end
