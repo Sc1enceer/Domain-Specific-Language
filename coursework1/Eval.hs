@@ -25,6 +25,8 @@ data Frame = HBody Expr | BodyH Expr Environment
            | HMap Expr | MapH Expr
            | HReverse Expr | ReverseH Expr
            | HListArith Expr | ListArithH Expr
+           | HTake  Expr | TakeH  Expr
+           | HSum Expr | SumH Expr
            deriving (Show, Eq)
 
 
@@ -165,6 +167,7 @@ eval ((TmSplitAt n (e),env,k)) = eval (TmSplitAt (evalLoop (n)) (evalLoop (e)), 
 
 
 
+
 -- Evaluation rules for head
 eval (TmHead (TmInts (n) e), env, k) = (TmInt n, env, k)
 
@@ -173,6 +176,27 @@ eval (TmLast (TmInts (n) e), env, (HLast (TmInt m): k)) = (TmLast(e), env, (HLas
 eval (TmLast (TmInt (n)), env, (HLast (TmInt m): k)) = (TmInt n, env, k)
 eval (TmLast (TmInts (n) e), env, k) = (TmLast(e), env, (HLast (TmInt n)):k)
 eval (TmLast (TmInt n), env, k) = (TmInt n, env, k)
+
+-- Evaluation rules for take
+eval (TmTake (TmInt 0) (TmInt n) , env, (HTake e1):k) =((getValueFromEnvironment(env)), env, [])
+eval (TmTake (TmInt 1) (TmInt n) , env, k) =(TmInt (n), env, [])
+eval (TmTake (TmInt n1) (TmInts n e), env, (HTake e1):k) -- = eval (TmTake (TmInt (n1-1)) (e),  env, (HTake e): k)
+                                | n1 > 0    = (TmTake (TmInt (n1-1)) e, ("Value", (TmInt n)) : env, (HTake e): k)
+                                | n1 == 0   = ((getValueFromEnvironment(env)), env, [])
+-- eval (TmTake e1 e2, env, (TakeH e3):k) = ((getValueFromEnvironment(env)), env, [])
+
+eval (TmTake e1 e2, env, k) 
+                            | (isValue e1) == False && (isValue e2) == False  = (TmTake (evalLoop e1) (evalLoop e2), env, k)
+                            | (isValue e1) == False    =(TmTake (evalLoop e1) e2, env, k)
+                            | (isValue e2) == False    =(TmTake e1 (evalLoop e2), env, k)
+                            | otherwise                = ((TmTake e1 e2),  env, (HTake e2): k)
+
+-- eval (TmTake (TmInt n1) (TmInts n e), env, k) = ((TmTake (TmInt n1) (TmInts n e)),  env, (HTake e): k)
+-- eval (TmTake e1 e2, env, k) = (TmTake (evalLoop e1) (evalLoop e2), env, (HTake e2):k)
+
+
+
+eval (TmTake (TmInt 0) (TmInt n) , env, k) = error "wrong arguments"
 
 
 -- Evaluation rules for map
@@ -199,15 +223,28 @@ eval (TmListsArith (TmLambda x typ e1) (TmLine e2 e3), env, k) | (isValue e2) ==
                                                       | (isValue e3) == False    = eval (TmListsArith (TmLambda x typ e1) (TmLine (e2) (evalLoop e3)), env, k)
 
 eval (TmListsArith (TmLambda x typ e1) (TmLine (TmInts n1 e2)  (TmInts n2 e3)), env, (HListArith e4):k) = (TmListsArith (TmLambda x typ e1) (TmLine e2 e3), ("Value", evalLoop (TmApp (TmApp (TmLambda x typ e1) (TmInt n1)) (TmInt n2))) : env, (HListArith (TmLine e2 e3)) :k)
-
 eval (TmListsArith (TmLambda x typ e1) (TmLine (TmInt n1)  (TmInt n2)), env, (HListArith e2):k) = (TmListsArith (TmLambda x typ e1) (TmInt 1), ("Value", evalLoop (TmApp (TmApp (TmLambda x typ e1)  (TmInt n1)) (TmInt n2))) :env, (ListArithH e2):k)
-
 eval (TmListsArith (TmLambda x typ e1) e2, env, (ListArithH e3):k) = (getValueFromEnvironment env, env, [])
-
 eval (TmListsArith (TmLambda x typ e1) (TmLine e2 e3), env, k) = (TmListsArith (TmLambda x typ e1) (TmLine e2 e3), env, (HListArith (TmLine e2 e3) :k))
 
--- eval (v,env1,(HLet x env2):k) | isValue v = (v, env2, k)
 
+
+-- eval ((TmAdd e1 e2), env, k) = (e1, env, (AddH e2 env):k)
+-- eval ((TmInt n), env1, (AddH e env2):k) = (e, env2, (HAdd (TmInt n)):k )
+-- eval ((TmInt m), env, (HAdd (TmInt n)) : k) = (TmInt (n + m), [], k)
+
+
+
+-- evaluation rules for sum
+
+eval (TmSum (TmInts n e1), env, (HSum (TmInt n1)):k) = (TmSum (e1), ("Value", (TmInt (n + n1) )) : env, (HSum (TmInt n)):k)
+eval (TmSum (TmInt n), ("Value", TmInt n1):env, (HSum (TmInt n2):k)) = (TmSum (TmInt (n1 + n)), env, (SumH (TmInt n):k))
+eval (TmSum (TmInt n), env1, (SumH e):k) = (TmInt (n), env1, [])
+eval (TmSum (TmInts n e1), env, k) = (TmSum (TmInts n e1), env, (HSum (TmInt 0):k))
+eval (TmSum e, env, k) | isValue e == False         = eval (TmSum (evalLoop e), env, k)
+
+
+-- evaluation rules for 
 
                              
 

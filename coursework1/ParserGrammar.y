@@ -48,6 +48,8 @@ import LexerTokens
     duplicate     {TokenDuplicate _}
     head          {TokenHead _}
     last          {TokenLast _}
+    take          {TokenTake _}
+    sum           {TokenSum _}
     map           {TokenMap _}
     listsArith     {TokenListsArith _}
 
@@ -58,6 +60,8 @@ import LexerTokens
 %left map
 %left head
 %right last
+%left sum
+%left take
 
 %left splitAt
 %right length
@@ -98,6 +102,8 @@ Exp : begin Exp end                               {TmBody $2}
     | length Exp                                  {TmLength $2}
     | head Exp                                    {TmHead $2}
     | last Exp                                    {TmLast $2}
+    | take Exp Exp                                {TmTake $2 $3}
+    | sum Exp                                     {TmSum $2}
     | listsArith Exp Exp                          {TmListsArith $2 $3} 
     | Exp '+' Exp                                 {TmAdd $1 $3}
     | Exp '-' Exp                                 {TmSub $1 $3}
@@ -150,7 +156,7 @@ type Environment = [ (String, Expr) ]
 data Expr = TmBody Expr |TmIf Expr Expr Expr | TmInts Int Expr | TmGt Expr Expr | TmLt Expr Expr
             | TmAdd Expr Expr | TmSub Expr Expr | TmMult Expr Expr | TmDiv Expr Expr | TmLine Expr Expr
             | TmGetStream | TmReverse Expr | TmLength Expr | TmInt Int | TmComma  | TmTrue | TmFalse
-            | TmPush Int Int Expr | TmHead Expr | TmLast Expr | TmApp Expr Expr | TmLambda String DataType Expr
+            | TmPush Int Int Expr | TmHead Expr | TmLast Expr | TmSum Expr | TmTake Expr Expr | TmApp Expr Expr | TmLambda String DataType Expr
             | TmPrint Expr | TmEnd | TmVar String | TmMerge Expr Expr | TmSplitAt Expr Expr | TmDuplicate Expr
             | TmMap Expr Expr |TmListsArith Expr Expr | TmLet String Expr | Cl String DataType Expr Environment
 

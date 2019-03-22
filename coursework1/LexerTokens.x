@@ -56,6 +56,8 @@ $white+       ;
   splitAt                   { tok (\p s -> TokenSplitAt p) }
   map                       { tok (\p s -> TokenMap p) }  
   listsArith                { tok (\p s -> TokenListsArith p) }
+  take                      { tok (\p s -> TokenTake p) }
+  sum                       { tok (\p s -> TokenSum p) }
   $alpha [$alpha $digit \_ \’]*   { tok (\p s -> TokenVar p s) }
 
 
@@ -108,7 +110,9 @@ data LexerToken =
   TokenSplitAt        AlexPosn          |
   TokenHead           AlexPosn          |
   TokenLast           AlexPosn          |
-  TokenMap            AlexPosn          
+  TokenMap            AlexPosn          |
+  TokenTake           AlexPosn          |
+  TokenSum            AlexPosn
   deriving (Eq,Show)
 
 tokenPosn :: LexerToken -> String
@@ -155,4 +159,6 @@ tokenPosn (TokenHead (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenLast (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenMap (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenListsArith (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenTake (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenSum (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 }
