@@ -56,8 +56,14 @@ $white+       ;
   splitAt                   { tok (\p s -> TokenSplitAt p) }
   map                       { tok (\p s -> TokenMap p) }  
   listsArith                { tok (\p s -> TokenListsArith p) }
+  zipLines                  { tok (\p s -> TokenZipLines p) }
   take                      { tok (\p s -> TokenTake p) }
   sum                       { tok (\p s -> TokenSum p) }
+  sumLists                  { tok (\p s -> TokenSumLists p)}
+  takeRepeat                    { tok (\p s -> TokenTakeRepeat p)}
+  fibSequence               { tok (\p s -> TokenFibSequence p)}
+  while                     { tok (\p s -> TokenWhile p)}
+  reverseLists              { tok (\p s -> TokenReverseLists p)}
   $alpha [$alpha $digit \_ \’]*   { tok (\p s -> TokenVar p s) }
 
 
@@ -112,7 +118,13 @@ data LexerToken =
   TokenLast           AlexPosn          |
   TokenMap            AlexPosn          |
   TokenTake           AlexPosn          |
-  TokenSum            AlexPosn
+  TokenSum            AlexPosn          |
+  TokenTakeRepeat     AlexPosn          |
+  TokenSumLists       AlexPosn          |
+  TokenFibSequence    AlexPosn          |
+  TokenZipLines       AlexPosn          |
+  TokenWhile          AlexPosn          |
+  TokenReverseLists   AlexPosn
   deriving (Eq,Show)
 
 tokenPosn :: LexerToken -> String
@@ -161,4 +173,11 @@ tokenPosn (TokenMap (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenListsArith (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenTake (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenSum (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenTakeRepeat (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenSumLists (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenFibSequence (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenZipLines (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenWhile (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenReverseLists (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+
 }

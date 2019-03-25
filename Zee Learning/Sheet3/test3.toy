@@ -1,1 +1,30 @@
-(\(x :Int) \(y:Int) x + y ) 1 2
+(\(x :Int) \(y:Int) x * y ) 1 2
+zipLines (\(x :Int) \(y:Int) x * y ) ((5,4,3,2,1; 4,3,2,1; 3,2,1; 2,1; 1) ; (1,1,2,3,5; 1,1,2,3; 1,1,2; 1,1; 1))
+
+zipLines (\(x :Int) \(y:Int) x * y ) ((1,2,3;1,2;1);(3,2,1;3,2;2))
+
+zipLines (\(x :Int) \(y:Int) x * y ) (takeRepeat 3 (1,2,3) ; (1,2,3;1,2,3))
+
+take 5 1,2,3,4,5
+Parsed as TmTake (TmInt 5) (TmInts 1 (TmInts 2 (TmInts 3 (TmInts 4 (TmInt 5)))))
+evaluate to as TmInts 5 (TmInts 4 (TmInts 3 (TmInts 2 (TmInt 1))))
+Evaluates to [5,4,3,2,1]
+
+
+
+takeRepeat 5 (1,2,3,4,5)
+Parsed as TmTakeRepeat (TmInt 5) (TmInts 1 (TmInts 2 (TmInts 3 (TmInts 4 (TmInt 5)))))
+evaluate to as TmLine (TmInts 5 (TmInts 4 (TmInts 3 (TmInts 2 (TmInt 1))))) (TmLine (TmInts 4 (TmInts 3 (TmInts 2 (TmInt 1)))) (TmLine (TmInts 3 (TmInts 2 (TmInt 1))) (TmLine (TmInts 2 (TmInt 1)) (TmInt 1))))
+Evaluates to [5,4,3,2,1][4,3,2,1][3,2,1][2,1]1
+
+
+reverseLists (takeRepeat 5 (fibSequence 5))
+Parsed as TmReverseLists (TmTakeRepeat (TmInt 5) (TmFibSequence (TmInt 5)))
+evaluate to as TmLine (TmInts 1 (TmInts 1 (TmInts 2 (TmInts 3 (TmInt 5))))) (TmLine (TmInts 1 (TmInts 1 (TmInts 2 (TmInt 3)))) (TmLine (TmInts 1 (TmInts 1 (TmInt 2))) (TmLine (TmInts 1 (TmInt 1)) (TmInt 1))))
+Evaluates to [1,1,2,3,5][1,1,2,3][1,1,2][1,1]1
+
+
+reverse (sumLists (zipLines (\(x :Int) \(y:Int) x * y ) ((takeRepeat 5 1,0,0,0,0) ; (reverseLists (takeRepeat 5 (fibSequence 5))))))
+Parsed as TmReverse (TmSumLists (TmZipLines (TmLambda "x" TyInt (TmLambda "y" TyInt (TmMult (TmVar "x") (TmVar "y")))) (TmLine (TmTakeRepeat (TmInt 5) (TmInts 1 (TmInts 2 (TmInts 3 (TmInts 4 (TmInt 5)))))) (TmReverseLists (TmTakeRepeat (TmInt 5) (TmFibSequence (TmInt 5)))))))
+evaluate to as TmInts 1 (TmInts 3 (TmInts 7 (TmInts 14 (TmInt 26))))
+Evaluates to [1,3,7,14,26]

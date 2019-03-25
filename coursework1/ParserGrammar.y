@@ -51,20 +51,32 @@ import LexerTokens
     take          {TokenTake _}
     sum           {TokenSum _}
     map           {TokenMap _}
-    listsArith     {TokenListsArith _}
+    takeRepeat    {TokenTakeRepeat _}
+    listsArith    {TokenListsArith _}
+    sumLists      {TokenSumLists _}
+    fibSequence   {TokenFibSequence _}
+    zipLines      {TokenZipLines _}
+    reverseLists  {TokenReverseLists _}
+    while         {TokenWhile _}
+
 
 %right begin
 %right end
 %right print
+%right zipLines
 %right listsArith
 %left map
 %left head
 %right last
 %left sum
+%left sumLists
 %left take
-
+%left takeRepeat
+%left fibSequence
+%left reverseLists
 %left splitAt
 %right length
+%left while
 %right duplicate
 %left reverse
 %right let
@@ -78,7 +90,7 @@ import LexerTokens
 %left '+' '-'
 %left '/' '*'
 %left '<' '>'
-%left ';'
+%right ';'
 %right ','
 %left APP
 
@@ -89,42 +101,46 @@ import LexerTokens
 
 %%
 
-Exp : begin Exp end                               {TmBody $2}
-    | if Exp then Exp else Exp fi                 {TmIf $2 $4 $6}
-    | push int int Exp                            {TmPush $2 $3 $4}
-    | getStream                                   {TmGetStream}
-    | duplicate Exp                               {TmDuplicate $2}
-    | Exp '++' Exp                                {TmMerge $1 $3}
-    | map Exp Exp                                 {TmMap $2 $3}
-    | lam '(' var ':' DataType ')' Exp            {TmLambda $3 $5 $7}
-    | splitAt Exp Exp                             {TmSplitAt $2 $3}
-    | reverse Exp                                 {TmReverse $2}
-    | length Exp                                  {TmLength $2}
-    | head Exp                                    {TmHead $2}
-    | last Exp                                    {TmLast $2}
-    | take Exp Exp                                {TmTake $2 $3}
-    | sum Exp                                     {TmSum $2}
-    | listsArith Exp Exp                          {TmListsArith $2 $3} 
-    | Exp '+' Exp                                 {TmAdd $1 $3}
-    | Exp '-' Exp                                 {TmSub $1 $3}
-    | Exp '*' Exp                                 {TmMult $1 $3}
-    | Exp '/' Exp                                 {TmDiv $1 $3}
-    | Exp '<' Exp                                 {TmLt $1 $3}
-    | Exp '>' Exp                                 {TmGt $1 $3}
-    | Exp ';' Exp                                 {TmLine $1 $3}
-    | Exp Exp %prec APP                           {TmApp $1 $2}
-    | int ',' Exp                                 {TmInts $1 $3}
-    | int                                         {TmInt $1}
-    | var                                         {TmVar $1}
-    | true                                        {TmTrue}
-    | false                                       {TmFalse}
-    | let var '=' Exp                             { TmLet $2 $4}
-    | print Exp                                   {TmPrint $2}
-    | end                                         {TmEnd}
-    | '(' Exp ')'                                 { $2 }
+Exp :: {Expr}
+Exp     : begin Exp end                               {TmBody $2}
+        | map Exp Exp                                 {TmMap $2 $3}
+        | if Exp then Exp else Exp fi                 {TmIf $2 $4 $6}    
+        | while Exp Exp                               {TmWhile $2 $3}   
+        | let var '=' Exp                             {TmLet $2 $4}
+        | zipLines Exp Exp                            {TmZipLines $2 $3}
+        | listsArith Exp Exp                          {TmListsArith $2 $3}
+        | length Exp                                   {TmLength $2}
+        | Exp ';' Exp                                 {TmLine $1 $3}
+        | print Exp                                   {TmPrint $2}
+        | Exp Exp %prec APP                           {TmApp $1 $2}
+        | lam '(' var ':' DataType ')' Exp            {TmLambda $3 $5 $7}
+        | reverse Exp                                 {TmReverse $2}
+        | reverseLists Exp                            {TmReverseLists $2}
+        | push int int Exp                            {TmPush $2 $3 $4}
+        | head Exp                                    {TmHead $2}
+        | last Exp                                    {TmLast $2}
+        | take Exp Exp                                {TmTake $2 $3}
+        | sumLists Exp                                {TmSumLists $2}
+        | takeRepeat Exp Exp                          {TmTakeRepeat $2 $3}
+        | fibSequence Exp                             {TmFibSequence $2}
+        | splitAt Exp Exp                             {TmSplitAt $2 $3}
+        | getStream                                   {TmGetStream}
+        | duplicate Exp                               {TmDuplicate $2}
+        | sum Exp                                     {TmSum $2}
+        | Exp '++' Exp                                {TmMerge $1 $3}
+        | Exp '+' Exp                                 {TmAdd $1 $3}
+        | Exp '-' Exp                                 {TmSub $1 $3}
+        | Exp '*' Exp                                 {TmMult $1 $3}
+        | Exp '/' Exp                                 {TmDiv $1 $3}
+        | Exp '<' Exp                                 {TmLt $1 $3}
+        | Exp '>' Exp                                 {TmGt $1 $3}
+        | int ',' Exp                                 {TmInts $1 $3}
+        | int                                         {TmInt $1}
+        | var                                         {TmVar $1}
+        | true                                        {TmTrue}
+        | false                                       {TmFalse}
+        | '(' Exp ')'                                 { $2 }
 
-
--- Function : lam '(' var ':' DataType ')' Exp            {TmLambda $3 $5 $7}
 
 
 DataType : Bool            { TyBool }
@@ -139,26 +155,25 @@ parseError :: [LexerToken] -> a
 parseError [] = error "Unknown Parse Error"
 parse (t:ts) = error ("Parse error at line:column" ++ (tokenPosn t))
 
--- data BoolValue = TmTrue | TmFalse
---              deriving(Show, Eq)
+type TyEnvironment = [ (String, Expr) ]
+type Environment = [ (String, Expr) ]
 
 
 data DataType =TyBool | TyInt | TyFun DataType DataType
               deriving(Show, Eq)
 
--- data Function = TmLambda String DataType Expr
---              deriving(Show, Eq)
 
-type TyEnvironment = [ (String, Expr) ]
-type Environment = [ (String, Expr) ]
-
-
-data Expr = TmBody Expr |TmIf Expr Expr Expr | TmInts Int Expr | TmGt Expr Expr | TmLt Expr Expr
-            | TmAdd Expr Expr | TmSub Expr Expr | TmMult Expr Expr | TmDiv Expr Expr | TmLine Expr Expr
-            | TmGetStream | TmReverse Expr | TmLength Expr | TmInt Int | TmComma  | TmTrue | TmFalse
-            | TmPush Int Int Expr | TmHead Expr | TmLast Expr | TmSum Expr | TmTake Expr Expr | TmApp Expr Expr | TmLambda String DataType Expr
-            | TmPrint Expr | TmEnd | TmVar String | TmMerge Expr Expr | TmSplitAt Expr Expr | TmDuplicate Expr
-            | TmMap Expr Expr |TmListsArith Expr Expr | TmLet String Expr | Cl String DataType Expr Environment
-
+data Expr =  TmInts Int Expr | TmGt Expr Expr | TmLt Expr Expr | TmAdd Expr Expr | TmSub Expr Expr | TmMult Expr Expr | TmDiv Expr Expr              
+            | TmGetStream | TmReverse Expr | TmLength Expr | TmInt Int | TmTrue | TmFalse | TmPush Int Int Expr | TmHead Expr | TmLast Expr 
+            | TmSum Expr | TmTake Expr Expr| TmPrint Expr | TmEnd | TmVar String | TmMerge Expr Expr | TmSplitAt Expr Expr | TmDuplicate Expr 
+            | TmTakeRepeat Expr Expr | TmSumLists Expr | TmFibSequence Expr |TmLine Expr Expr | TmLambda String DataType Expr |  TmApp Expr Expr 
+            | Cl String DataType Expr Environment | TmBody Expr  | TmIf Expr Expr Expr | TmWhile Expr Expr | TmLet String Expr | TmZipLines Expr Expr 
+            | TmMap Expr Expr | TmListsArith Expr Expr | TmReverseLists Expr
             deriving (Show, Eq)
+
+
+
+
+
+
 }

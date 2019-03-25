@@ -1,10 +1,6 @@
 begin
-  let x = getStream
-  let m = reverse generateFibSequence
-  let n = length x
-  let counter = 0
-  while (counter < n)
-    let lines = readLines counter
-    print (multiplyLists lines)
-    counter++
+  reverse 
+  (sumLists (zipLines (\(x :Int) \(y:Int) x * y ) 
+  ((takeRepeat 5 1,2,3,4,5) ; 
+  (reverseLists (takeRepeat 5 (fibSequence 5))))))
 end
