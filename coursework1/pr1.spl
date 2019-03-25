@@ -1,10 +1,3 @@
 begin
 push 0 0 getStream
 end
-
-
--- Evaluation rules for take
--- eval (TmTake (TmInt n1) (TmInts n e), env, k) = eval (TmTake (TmInt (n) e),  env, (HTake e): k)
---                                 | n1 > 0    = eval (TmTake (TmInt (n-1) e), ("Value", (TmInt n)) : env, (HTake e): k)
---                                 | n1 == 0   = eval (TmTake (TmInt 0) e, env, (TakeH (TmInt 0):k))
--- eval (TmTake (TmInt 0 e), env, (HTake e2):k) = ((getValueFromEnvironment(env)), env, [])

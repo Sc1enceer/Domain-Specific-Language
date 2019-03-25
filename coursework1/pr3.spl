@@ -1,11 +1,6 @@
 begin
- let n = length (getStream)
- -- ( \ (x : Int) (if (( \(x : Int) x == 2 ) n ) then x else x + 1)) 7
- let counter = 0
- while (counter < n)
-    let u = readLine counter
-    let p = splitAt 1 u
-    let p1 = head p
-    let p2 = last p
-    print (p1 + (3 * p2))
+ reverse (listsArith (\(x :Int) \(y:Int) x + y ) (1,2,3,4,5 ; ( map (\(x:Int) x * 3) (5,4,3,2,1)))) 
 end
+
+
+

@@ -1,6 +1,3 @@
 begin
-  reverse 
-  (sumLists (zipLines (\(x :Int) \(y:Int) x * y ) 
-  ((takeRepeat 5 1,2,3,4,5) ; 
-  (reverseLists (takeRepeat 5 (fibSequence 5))))))
+  reverse (sumLists (zipLines (\(x :Int) \(y:Int) x * y )   ((takeRepeat 5 1,2,3,4,5) ;   (reverseLists (takeRepeat 5 (fibSequence 5))))))
 end

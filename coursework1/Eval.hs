@@ -144,16 +144,6 @@ eval(v, env1, (HApp (Cl x typ e env2)):k) = (e, update env2 x v, k)
 
 
 -- Evaluation rules for duplicate
--- eval (TmDuplicate (TmInts n e ), env, (HDuplicate (TmInts x (TmInts q p))):k) = (TmDuplicate (e), env, (HDuplicate ( TmInts (x) (TmInts n (TmInts q p) )):k))
--- eval (TmDuplicate (TmInts n e), env, k) = (TmDuplicate (e), env, (HDuplicate (TmInts (n) (TmInts n e)):k))
--- eval (TmDuplicate (TmInt n), env, (HDuplicate (TmInts x (TmInts q p))):k) = (TmInts ((x)) (TmInts (n) (TmInts q p)), env, k)
--- eval (TmDuplicate (TmInt n), env, k) = (TmInts (n) (TmInt n), env, k)
-
-
--- eval (TmDuplicate (TmInts n e ), env, (HDuplicate (TmInts w s)):k) = (TmDuplicate (e), env, (HDuplicate ( TmInts (TmInts w s) (n))):k)
--- eval (TmDuplicate (TmInts n e), env, k) = (TmDuplicate (e), env, (HDuplicate (TmInts (TmInts n e) (n))):k)
--- eval (TmDuplicate (TmInt n), env, (HDuplicate (TmInts m w)):k) = (TmInts (TmInts m w) (TmInt n), env, k)
--- eval (TmDuplicate (TmInt n), env, k) = (TmInts (TmInt n) (TmInt n), env, k)
 
 eval (TmDuplicate (TmInts n e), env, k)= (duplicateList (TmInts n e) (TmInts n e), env, k )
 eval (TmDuplicate (TmInt n), env, k) = (TmInts (n) (TmInt n), env, k)
@@ -241,8 +231,8 @@ eval (TmTakeRepeat e1 e2, env, k)
 --TmSumLists (TmTakeRepeat (TmLength (TmInts 1 (TmInts 2 (TmInts 3 (TmInt 4))))) (TmInts 1 (TmInts 2 (TmInts 3 (TmInt 4)))))
 
 -- Evaluation rules for map
-eval (TmMap (TmLambda x typ e1) (TmInts n1 e), env, (HMap (TmInts n2 e2):k)) = (TmMap (TmLambda x typ e1) e, ("Value", (evalLoop (TmApp (TmLambda x typ e1) (TmInt n1)))) : env, (HMap e):k)
-eval (TmMap (TmLambda x typ e1) (TmInt n1), env, (HMap (TmInt n2):k)) = (TmMap (TmInt n1) (TmInt n1), ("Value", (evalLoop (TmApp (TmLambda x typ e1) (TmInt n1)))) : env, (MapH e1) : k)
+eval (TmMap (TmLambda x typ e1) (TmInts n1 e), env, (HMap (TmInts n2 e2):k)) = (TmMap (TmLambda x typ e1) e, env ++ [("Value", (evalLoop (TmApp (TmLambda x typ e1) (TmInt n1))))] , (HMap e):k)
+eval (TmMap (TmLambda x typ e1) (TmInt n1), env, (HMap (TmInt n2):k)) = (TmMap (TmInt n1) (TmInt n1), env ++ [("Value", (evalLoop (TmApp (TmLambda x typ e1) (TmInt n1))))], (MapH e1) : k)
 eval (TmMap (TmInt n) (TmInt n1), env, (MapH e1) : k) = (getValueFromEnvironment env, env, [])
 eval (TmMap (TmLambda x typ e1) expr, env, k) = (TmMap (TmLambda x typ e1) expr, env, (HMap expr):k )
 
