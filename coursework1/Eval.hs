@@ -34,7 +34,6 @@ data Frame = HBody Expr | BodyH Expr Environment
            | HReverseLists Expr | ReverseListsH Expr
            deriving (Show, Eq)
 
-
 type Kontinuation = [ Frame ]
 
 type State = (Expr, Environment, Kontinuation)
@@ -72,11 +71,17 @@ isValueExtra ( _, _, _) = False
 
 
 
--- evaluation rules for plus operator
+
+
+-- evaluation rules
 eval :: State -> State
 eval ((TmVar x), env, k) = (e', env', k)
                   where (e', env') = getValueBinding x env
 eval (v, env, []) | isValue v   = (v, env, [])
+
+
+-- Evaluation rules for negate operator
+eval (Negate (TmInt (n)), env, k) = (TmInt (-n), [], k) 
 
 -- Evaluation rules for plus operator
 
@@ -131,8 +136,6 @@ eval ((TmInt n), env1, (HPush (TmInt m) e3 env2):k) = ((TmInts (m) e3), env2, k)
 eval ((TmLet x e1),env,k) = (e1,env,(HLet x env):k)
 eval (v,env1,(HLet x env2):k) | isValue v = (v, env2, k)
 
-
-
 -- closure property for lambda
 eval((TmLambda x typ e), env, k) = ((Cl x typ e env), [], k)
 
@@ -160,9 +163,6 @@ eval ((TmLength(e),env,k)) = (TmLength((evalLoop e)),env,k)
 eval (TmSplitAt (TmInt n) (TmInts m e), env, k) = eval (evalLoop (TmLine (splitBefore (TmInts m e) n) (splitAfter (TmInts m e) n)), env, k)
 eval ((TmSplitAt n (e),env,k)) = eval (TmSplitAt (evalLoop (n)) (evalLoop (e)), env, k)
 
-
-
-
 -- Evaluation rules for head
 eval (TmHead (TmInts (n) e), env, k) = (TmInt n, env, k)
 
@@ -173,14 +173,6 @@ eval (TmLast (TmInts (n) e), env, k) = (TmLast(e), env, (HLast (TmInt n)):k)
 eval (TmLast (TmInt n), env, k) = (TmInt n, env, k)
 
 -- Evaluation rules for take
-
---eval (TmTake (TmInt 0) e2 , env, (TakeH e1):k) =((getValueFromEnvironment(env)), env, [])
-
--- eval (TmTake (TmInt 1) (TmInt n2), env, (TakeH e1):k) = (TmTake (TmInt (0)) (TmInt n2), ("Value", (TmInt n2)) : env, (TakeH e1): k)
-
-
-                            
-
 
 eval (TmTake (TmInt 1) (TmInt n), env, (HTake e):k) = (TmTake (TmInt (0)) (TmInt 0), ("Value", (TmInt n)) : env, (TakeH e): k)
 
@@ -312,7 +304,6 @@ eval (TmFibSequence (TmInt n) , env, k)
                              
 
 -- evaluation rules for zip lines
-
 
 eval (TmZipLines (TmLambda x typ e1)  (TmLine (TmLine (TmInts n1 e2) e3) (TmLine (TmInts n2 e4) e5)), env, (HZipLines e6 e7): k) = (TmZipLines (TmLambda x typ e1) (TmLine e3 e5),  env ++ [("Value", evalLoop (TmListsArith (TmLambda x typ e1)  (TmLine ((TmInts n1 e2)) (TmInts n2 e4))))] , (HZipLines e3 e5): k)
 eval (TmZipLines (TmLambda x typ e1)  (TmLine (TmInts n1 e2) (TmInts n2 e3)), env, (HZipLines e4 e5): k) = (TmZipLines (TmLambda x typ e1) (TmLine (TmInts n1 e2) (TmInts n2 e3)),   env ++ [("Value", evalLoop (TmListsArith (TmLambda x typ e1)  (TmLine ((TmInts n1 e2)) (TmInts n2 e3))))] , (ZipLinesH (TmInt 0)): k)

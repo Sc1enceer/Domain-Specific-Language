@@ -13,6 +13,7 @@ $alpha = [a-zA-Z]
 tokens :-
 -- ignore the white space here
 $white+       ;
+  "--".*        ;
   Bool                      { tok (\p s -> TokenTypeBool p)}
   Int                       { tok (\p s -> TokenTypeInt p)}
   $digit+                   { tok (\p s -> TokenInt p (read s)) }
@@ -60,7 +61,7 @@ $white+       ;
   take                      { tok (\p s -> TokenTake p) }
   sum                       { tok (\p s -> TokenSum p) }
   sumLists                  { tok (\p s -> TokenSumLists p)}
-  takeRepeat                    { tok (\p s -> TokenTakeRepeat p)}
+  takeRepeat                { tok (\p s -> TokenTakeRepeat p)}
   fibSequence               { tok (\p s -> TokenFibSequence p)}
   while                     { tok (\p s -> TokenWhile p)}
   reverseLists              { tok (\p s -> TokenReverseLists p)}
@@ -124,7 +125,7 @@ data LexerToken =
   TokenFibSequence    AlexPosn          |
   TokenZipLines       AlexPosn          |
   TokenWhile          AlexPosn          |
-  TokenReverseLists   AlexPosn
+  TokenReverseLists   AlexPosn          
   deriving (Eq,Show)
 
 tokenPosn :: LexerToken -> String

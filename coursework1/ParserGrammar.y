@@ -74,6 +74,7 @@ import LexerTokens
 %left takeRepeat
 %left fibSequence
 %left reverseLists
+%left NEG 
 %left splitAt
 %right length
 %left while
@@ -109,8 +110,9 @@ Exp     : begin Exp end                               {TmBody $2}
         | let var '=' Exp                             {TmLet $2 $4}
         | zipLines Exp Exp                            {TmZipLines $2 $3}
         | listsArith Exp Exp                          {TmListsArith $2 $3}
-        | length Exp                                   {TmLength $2}
+        | length Exp                                  {TmLength $2}
         | Exp ';' Exp                                 {TmLine $1 $3}
+        | '-' Exp %prec NEG                           { Negate $2 } 
         | print Exp                                   {TmPrint $2}
         | Exp Exp %prec APP                           {TmApp $1 $2}
         | lam '(' var ':' DataType ')' Exp            {TmLambda $3 $5 $7}
@@ -142,7 +144,8 @@ Exp     : begin Exp end                               {TmBody $2}
         | '(' Exp ')'                                 { $2 }
 
 
-
+-- Text : 
+DataType :: {DataType}
 DataType : Bool            { TyBool }
          | Int             { TyInt }
          | DataType arr DataType   { TyFun $1 $3 }
@@ -168,7 +171,7 @@ data Expr =  TmInts Int Expr | TmGt Expr Expr | TmLt Expr Expr | TmAdd Expr Expr
             | TmSum Expr | TmTake Expr Expr| TmPrint Expr | TmEnd | TmVar String | TmMerge Expr Expr | TmSplitAt Expr Expr | TmDuplicate Expr 
             | TmTakeRepeat Expr Expr | TmSumLists Expr | TmFibSequence Expr |TmLine Expr Expr | TmLambda String DataType Expr |  TmApp Expr Expr 
             | Cl String DataType Expr Environment | TmBody Expr  | TmIf Expr Expr Expr | TmWhile Expr Expr | TmLet String Expr | TmZipLines Expr Expr 
-            | TmMap Expr Expr | TmListsArith Expr Expr | TmReverseLists Expr
+            | TmMap Expr Expr | TmListsArith Expr Expr | TmReverseLists Expr | Negate Expr 
             deriving (Show, Eq)
 
 

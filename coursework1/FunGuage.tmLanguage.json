@@ -1,0 +1,13 @@
+{	patterns = (
+		{	name = 'comment.line.double-dash';
+			begin = '--';
+			end = '\n';
+		},
+		{	name = 'keyword.control.query';
+			match = '\b(begin|end)\b';
+		},
+		{	name = 'keyword.operator.logic';
+			match = '\b(and|exists|in)\b';
+		},
+	);
+}
