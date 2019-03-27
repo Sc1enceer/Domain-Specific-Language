@@ -91,12 +91,12 @@ typeOf tenv (TmHead e) | (typeOf tenv e) == TyInts  = TyInt
 typeOf tenv (TmLast e) | (typeOf tenv e) == TyInts = TyInt
 
 typeOf tenv (TmTake index e)
-                       | evalLoop index == TmInt 1 = TyInt
+                       | evalLoop index [] == TmInt 1 = TyInt
                        | otherwise = TyInts
                 where (TyInt, TyInts) = (typeOf tenv index, typeOf tenv e)
 
 typeOf tenv (TmTakeRepeat n e) 
-                       | evalLoop n == TmInt 1 = TyInt
+                       | evalLoop n [] == TmInt 1 = TyInt
                        | otherwise = TyLine
                 where (TyInt, TyInts) = (typeOf tenv n, typeOf tenv e)
 
@@ -119,7 +119,7 @@ typeOf tenv (TmSum e) = TyInt
                 where (TyInt) = (typeOf tenv e)
 
 typeOf tenv (TmFibSequence e) 
-                    | evalLoop e == TmInt 1     = TyInt
+                    | evalLoop e [] == TmInt 1     = TyInt
                     | otherwise = TyInts
                     
 typeOf tenv (TmZipLines e1 e2) = TyLine

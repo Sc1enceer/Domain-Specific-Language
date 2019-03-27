@@ -24,7 +24,7 @@ $white+       ;
   false                     { tok (\p s -> TokenFalse p)}
   begin                     { tok (\p s -> TokenBegin p) }
   end                       { tok (\p s -> TokenEnd p)}
-  getStream                 { tok (\p s -> TokenGetStream p)}
+  getSequence               { tok (\p s -> TokenGetSequence p)}
   print                     { tok (\p s -> TokenPrint p)}
   '\n'                      { tok (\p s -> TokenEOL p)}
   let                       { tok (\p s -> TokenLet p)}
@@ -88,7 +88,7 @@ data LexerToken =
   TokenFalse          AlexPosn          |
   TokenBegin          AlexPosn          |
   TokenEnd            AlexPosn          |
-  TokenGetStream      AlexPosn          |
+  TokenGetSequence    AlexPosn          |
   TokenPrint          AlexPosn          |
   TokenEOL            AlexPosn          |
   TokenLet            AlexPosn          |
@@ -144,7 +144,7 @@ tokenPosn (TokenTrue  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenFalse  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenBegin  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenEnd  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-tokenPosn (TokenGetStream  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenGetSequence  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenPrint  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenEOL (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenLet (AlexPn a l c)) = show(l) ++ ":" ++ show(c)

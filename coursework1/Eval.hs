@@ -36,7 +36,7 @@ data Frame = HBody Expr | BodyH Expr Environment
 
 type Kontinuation = [ Frame ]
 
-type State = (Expr, Environment, Kontinuation)
+type State = (Expr, Environment, [[Int]],  Kontinuation)
 
 -- Function to {-# UNPACK #-}  a closure to extract the underlying term and Environment
 unpack :: Expr -> (Expr, Environment)
@@ -62,7 +62,6 @@ isValue TmTrue = True
 isValue TmFalse = True
 isValue (TmLine _ _) = True
 isValue (Cl _ _ _ _) = True
-isValue (TmGetStream) =  True
 isValue _ = False
 
 isValueExtra :: (Expr, Environment, Kontinuation) -> Bool
@@ -75,247 +74,284 @@ isValueExtra ( _, _, _) = False
 
 -- evaluation rules
 eval :: State -> State
-eval ((TmVar x), env, k) = (e', env', k)
+eval ((TmVar x), env, input, k) = (e', env', input, k)
                   where (e', env') = getValueBinding x env
-eval (v, env, []) | isValue v   = (v, env, [])
+eval (v, env, input, []) | isValue v   = (v, env, input, [])
 
 -- Evaluation rules for body
-eval (TmBody e, env, k) = eval (e, env, k)
+eval (TmBody e, env, input, k) = eval (e, env, input, k)
 
 -- Evaluation rules for negate operator
-eval (Negate (TmInt (n)), env, k) = (TmInt (-n), [], k) 
+eval (Negate (TmInt (n)), env, input, k) = (TmInt (-n), [], input, k) 
 
 -- Evaluation rules for plus operator
 
-eval ((TmAdd e1 e2), env, k) = (e1, env, (AddH e2 env):k)
-eval ((TmInt n), env1, (AddH e env2):k) = (e, env2, (HAdd (TmInt n)):k )
-eval ((TmInt m), env, (HAdd (TmInt n)) : k) = (TmInt (n + m), [], k)
+eval ((TmAdd e1 e2), env, input, k) = (e1, env, input, (AddH e2 env):k)
+eval ((TmInt n), env1, input, (AddH e env2):k) = (e, env2, input, (HAdd (TmInt n)):k )
+eval ((TmInt m), env, input, (HAdd (TmInt n)) : k) = (TmInt (n + m), [], input, k)
 
 -- Evaluation rules for subtract operator
 
-eval ((TmSub e1 e2), env, k) = (e1, env, (SubH e2 env):k)
-eval ((TmInt n), env1, (SubH e env2):k) = (e, env2, (HSub (TmInt n)):k )
-eval ((TmInt m), env, (HSub (TmInt n)) : k) = (TmInt (n - m), [], k)
+eval ((TmSub e1 e2), env, input, k) = (e1, env, input, (SubH e2 env):k)
+eval ((TmInt n), env1, input, (SubH e env2):k) = (e, env2, input, (HSub (TmInt n)):k )
+eval ((TmInt m), env, input, (HSub (TmInt n)) : k) = (TmInt (n - m), [], input, k)
 
 -- Evaluation rules for multiply operator
 
-eval ((TmMult e1 e2), env, k) = (e1, env, (MultH e2 env):k)
-eval ((TmInt n), env1, (MultH e env2):k) = (e, env2, (HMult (TmInt n)):k )
-eval ((TmInt m), env, (HMult (TmInt n)) : k) = (TmInt (n * m), [], k)
+eval ((TmMult e1 e2), env,input, k) = (e1, env, input,(MultH e2 env):k)
+eval ((TmInt n), env1, input, (MultH e env2):k) = (e, env2, input, (HMult (TmInt n)):k )
+eval ((TmInt m), env, input, (HMult (TmInt n)) : k) = (TmInt (n * m), [],input, k)
 
 -- Evaluation rules for divide operator
 
-eval ((TmDiv e1 e2), env, k) = (e1, env, (DivH e2 env):k)
-eval ((TmInt n), env1, (DivH e env2):k) = (e, env2, (HDiv (TmInt n)):k )
-eval ((TmInt m), env, (HDiv (TmInt n)) : k) = (TmInt (n `div` m), [], k)
+eval ((TmDiv e1 e2), env,input, k) = (e1, env, input, (DivH e2 env):k)
+eval ((TmInt n), env1, input,(DivH e env2):k) = (e, env2, input, (HDiv (TmInt n)):k )
+eval ((TmInt m), env, input, (HDiv (TmInt n)) : k) = (TmInt (n `div` m), [], input, k)
 
 
 -- Evaluation rules for less than oeprator
 
-eval ((TmLt e1 e2),env,k) = (e1,env,(LtH e2 env):k)
-eval ((TmInt n),env1,(LtH e env2):k) = (e,env2,(HLt (TmInt n)) : k)
-eval ((TmInt m),env,(HLt (TmInt n)):k) | n < m = (TmTrue,[],k)
-                                             | otherwise = (TmFalse,[],k)
+eval ((TmLt e1 e2),env,input, k) = (e1,env,input,(LtH e2 env):k)
+eval ((TmInt n),env1,input, (LtH e env2):k) = (e,env2,input,(HLt (TmInt n)) : k)
+eval ((TmInt m),env,input,(HLt (TmInt n)):k) | n < m = (TmTrue,[],input,k)
+                                             | otherwise = (TmFalse,[],input,k)
 
 -- Evaluation rules for less than oeprator
-eval ((TmGt e1 e2),env,k) = (e1,env,(GtH e2 env):k)
-eval ((TmInt n),env1,(GtH e env2):k) = (e,env2,(HGt (TmInt n)) : k)
-eval ((TmInt m),env,(HGt (TmInt n)):k) | n > m = (TmTrue,[],k)
-                                            | otherwise = (TmFalse,[],k)
+eval ((TmGt e1 e2),env,input,k) = (e1,env,input,(GtH e2 env):k)
+eval ((TmInt n),env1,input,(GtH e env2):k) = (e,env2,input,(HGt (TmInt n)) : k)
+eval ((TmInt m),env,input,(HGt (TmInt n)):k) | n > m = (TmTrue,[],input,k)
+                                            | otherwise = (TmFalse,[],input,k)
 
 -- Evaluation rules for if then else
-eval ((TmIf e1 e2 e3), env, k) = (e1, env, (HIf e2 e3 env):k)
-eval (TmTrue, env1, (HIf e2 e3 env2):k) = (e2, env2, k)
-eval (TmFalse, env1, (HIf e2 e3 env2):k) = (e3, env2, k)
+eval ((TmIf e1 e2 e3), env,input, k) = (e1, env, input,(HIf e2 e3 env):k)
+eval (TmTrue, env1, input,(HIf e2 e3 env2):k) = (e2, env2,input, k)
+eval (TmFalse, env1, input,(HIf e2 e3 env2):k) = (e3, env2,input, k)
 
 
 -- Evaluation rules for push
-eval ((TmPush element index e3), env, k) = ((TmInt index), env, (HPush (TmInt element) e3 env) :k)
-eval ((TmInt n), env1, (HPush (TmInt m) e3 env2):k) = ((TmInts (m) e3), env2, k)
+eval ((TmPush element index e3), env,input, k) = ((TmInt index), env, input, (HPush (TmInt element) e3 env) :k)
+eval ((TmInt n), env1, input,(HPush (TmInt m) e3 env2):k) = ((TmInts (m) (evalLoop e3 input )), env2,input, k)
 
 
 
 -- Evaluation rules for Let blocks
-eval ((TmLet x typ e1 e2),env,k) = (e1,env,(HLet x typ e2):k)
-eval (v,env,(HLet x typ e):k) | isValue v = (e, update env x v , k)
+eval ((TmLet x typ e1 e2),env, input,k) = (e1,env,input,(HLet x typ e2):k)
+eval (v,env,input,(HLet x typ e):k) | isValue v = (e, update env x v ,input, k)
 
 
 
 -- closure property for lambda
-eval((TmLambda x typ e), env, k) = ((Cl x typ e env), [], k)
+eval((TmLambda x typ e), env,input, k) = ((Cl x typ e env), [],input, k)
 
 
 -- Evaluation rules for application
-eval((TmApp e1 e2), env, k) = (e1, env, (AppH e2 env):k)
-eval(v, env1, (AppH e env2):k) | isValue v = (e, env2, (HApp v):k)
-eval(v, env1, (HApp (Cl x typ e env2)):k) = (e, update env2 x v, k)
+eval((TmApp e1 e2), env,input, k) = (e1, env, input,(AppH e2 env):k)
+eval(v, env1, input,(AppH e env2):k) | isValue v = (e, env2, input,(HApp v):k)
+eval(v, env1, input, (HApp (Cl x typ e env2)):k) = (e, update env2 x v,input, k)
 
 
 -- Evaluation rules for duplicate
 
-eval (TmDuplicate (TmInts n e), env, k)= (duplicateList (TmInts n e) (TmInts n e), env, k )
-eval (TmDuplicate (TmInt n), env, k) = (TmInts (n) (TmInt n), env, k)
-eval ((TmDuplicate (e),env,k)) = (TmDuplicate((evalLoop e)),env,k)
+eval (TmDuplicate (TmInts n e), env,input, k)= (duplicateList (TmInts n e) (TmInts n e), env,input, k )
+eval (TmDuplicate (TmInt n), env,input, k) = (TmInts (n) (TmInt n), env,input, k)
+eval ((TmDuplicate (e),env,input,k)) = (TmDuplicate((evalLoop e input)),env,input,k)
 
 -- Evaluation rules for length
-eval(TmLength (TmInt n), env, (HLength (TmInt m)):k) = (TmInt (1), env, k)
-eval(TmLength (TmInts (n) e), env ,k) = (TmInt (findLength (TmInts n e)), env, k)
-eval ((TmLength (TmInt n)),env,k) = ((TmInt 1), env, k)
-eval ((TmLength(e),env,k)) = (TmLength((evalLoop e)),env,k)
+eval(TmLength (TmInt n), env, input,(HLength (TmInt m)):k) = (TmInt (1), env,input, k)
+eval(TmLength (TmInts (n) e), env ,input,k) = (TmInt (findLength (TmInts n e)), env,input, k)
+eval ((TmLength (TmInt n)),env,input,k) = ((TmInt 1), env,input, k)
+eval ((TmLength(e),env,input,k)) = (TmLength((evalLoop e input)),env,input,k)
 
 
 -- Evaluation rules for splitAt
-eval (TmSplitAt (TmInt n) (TmInts m e), env, k) = eval (evalLoop (TmLine (splitBefore (TmInts m e) n) (splitAfter (TmInts m e) n)), env, k)
-eval ((TmSplitAt n (e),env,k)) = eval (TmSplitAt (evalLoop (n)) (evalLoop (e)), env, k)
+eval (TmSplitAt (TmInt n) (TmInts m e), env,input, k) = eval ((evalLoop (TmLine (splitBefore (TmInts m e) n) (splitAfter (TmInts m e) n)) input), env, input, k)
+eval ((TmSplitAt n (e),env, input,k)) = eval (TmSplitAt (evalLoop (n) input) (evalLoop (e) input), env, input, k)
 
 -- Evaluation rules for head
-eval (TmHead (TmInts (n) e), env, k) = (TmInt n, env, k)
+eval (TmHead (TmInts (n) e), env, input ,k) = (TmInt n, env,input, k)
 
 -- Evaluation rules for last
-eval (TmLast (TmInts (n) e), env, (HLast (TmInt m): k)) = (TmLast(e), env, (HLast (TmInt n)):k)
-eval (TmLast (TmInt (n)), env, (HLast (TmInt m): k)) = (TmInt n, env, k)
-eval (TmLast (TmInts (n) e), env, k) = (TmLast(e), env, (HLast (TmInt n)):k)
-eval (TmLast (TmInt n), env, k) = (TmInt n, env, k)
+eval (TmLast (TmInts (n) e), env, input, (HLast (TmInt m): k)) = (TmLast(e), env, input,(HLast (TmInt n)):k)
+eval (TmLast (TmInt (n)), env, input, (HLast (TmInt m): k)) = (TmInt n, env, input, k)
+eval (TmLast (TmInts (n) e), env, input, k) = (TmLast(e), env, input, (HLast (TmInt n)):k)
+eval (TmLast (TmInt n), env,input, k) = (TmInt n, env, input,k)
+
+-- -- Evaluation rules for take
+
+-- eval (TmTake (TmInt 1) (TmInt n), env, input, (HTake e):k) = (TmTake (TmInt (0)) (TmInt 0), ("Value", (TmInt n)) : env, input, (TakeH e): k)
+
+-- eval (TmTake (TmInt n1) (TmInts n e), env, input, (HTake e1):k)
+--                                             | n1 == 1    = (TmTake (TmInt (n1-1)) e, ("Value", (TmInt n)) : env, input, TakeH (TmInts n e): k)
+--                                             | n1 > 1     =  (TmTake (TmInt (n1-1)) e, ("Value", (TmInt n)) : env, input, HTake (TmInts n e): k)  
+
+
+
+-- eval (TmTake (TmInt 0) e2 , env, input, (TakeH e1):k) =((getValueFromEnvironment(env)), [], input, [])
+--                                -- | n1 > 0    = (TmTake (TmInt (n1-1)) e, ("Value", (TmInt n)) : env, (HTake e): k)
+--                                -- | n1 == 0    = (TmTake (TmInt (0)) e,  env, (TakeH e): k)
+
+  
+-- eval (TmTake e1 e2, env, input, k) 
+--                             | (isValue e1) == False && (isValue e2) == False  = (TmTake (evalLoop e1 input) (evalLoop e2 input), env, input, k)
+--                             | (isValue e1) == False    =(TmTake (evalLoop e1 input) e2, env, input, k)
+--                             | (isValue e2) == False    =(TmTake e1 (evalLoop e2 input), env,input, k)
+--                             | otherwise                = ((TmTake e1 e2),  env,input, (HTake e2): k)
+
+
+-- eval (TmTake (TmInt 1) (TmInts n e) , [], input, []) =(TmInt (n), [], input, [])
+-- eval (TmTake (TmInt 1) (TmInt n) , [], input, []) =(TmInt (n), [], input, [])
+
+
+
+
+
+-- --eval (TmTake (TmInt 0) (TmInt n) , env, k) = error "wrong arguments"
+
+
+
+-- -- evaluation rules for repeat
+-- eval (TmTakeRepeat (TmInt n) e1, env, input, (HTakeRepeat (TmInt n1):k))
+--                                               | n1 <= n      = (TmTakeRepeat (TmInt n) e1, ("Value", (evalLoop (TmTake (TmInt n1) e1) input)):env, input, (HTakeRepeat (TmInt (n1 + 1)): k))
+--                                               | otherwise    = ((getValueFromEnvironment env), env ,input, [])
+
+-- eval (TmTakeRepeat (TmInt n) e1, env,input, k) = (TmTakeRepeat (TmInt n) e1, env, input, (HTakeRepeat (TmInt 1):k))
+
+
+
+-- eval (TmTakeRepeat e1 e2, env,input, k) 
+--                             | (isValue e1) == False && (isValue e2) == False  = (TmTakeRepeat (evalLoop e1 input) (evalLoop e2 input), env,input, k)
+--                             | (isValue e1) == False    =(TmTakeRepeat (evalLoop e1 input) e2, env,input, k)
+--                             | (isValue e2) == False    =(TmTakeRepeat e1 (evalLoop e2 input), env, input, k)
+--                             | otherwise                = ((TmTakeRepeat e1 e2),  env, input, (HTakeRepeat e2): k)
+
+-- --TmSumLists (TmTakeRepeat (TmLength (TmInts 1 (TmInts 2 (TmInts 3 (TmInt 4))))) (TmInts 1 (TmInts 2 (TmInts 3 (TmInt 4)))))
 
 -- Evaluation rules for take
+eval (TmTake (TmInt 1) (TmInt n), env,stm, (HTake e):k) = (TmTake (TmInt (0)) (TmInt 0), ("Value", (TmInt n)) : env,stm, (TakeH e): k)
 
-eval (TmTake (TmInt 1) (TmInt n), env, (HTake e):k) = (TmTake (TmInt (0)) (TmInt 0), ("Value", (TmInt n)) : env, (TakeH e): k)
-
-eval (TmTake (TmInt n1) (TmInts n e), env, (HTake e1):k)
-                                            | n1 == 1    = (TmTake (TmInt (n1-1)) e, ("Value", (TmInt n)) : env, TakeH (TmInts n e): k)
-                                            | n1 > 1     =  (TmTake (TmInt (n1-1)) e, ("Value", (TmInt n)) : env, HTake (TmInts n e): k)  
-
+eval (TmTake (TmInt n1) (TmInts n e), env,stm, (HTake e1):k)
+                                            | n1 == 1    = (TmTake (TmInt (n1-1)) e, ("Value", (TmInt n)) : env,stm, TakeH (TmInts n e): k)
+                                            | n1 > 1     =  (TmTake (TmInt (n1-1)) e, ("Value", (TmInt n)) : env,stm, HTake (TmInts n e): k)  
 
 
-eval (TmTake (TmInt 0) e2 , env, (TakeH e1):k) =((getValueFromEnvironment(env)), [], [])
+
+eval (TmTake (TmInt 0) e2 , env,stm, (TakeH e1):k) =((getValueFromEnvironment(env)), [],stm, [])
                                -- | n1 > 0    = (TmTake (TmInt (n1-1)) e, ("Value", (TmInt n)) : env, (HTake e): k)
                                -- | n1 == 0    = (TmTake (TmInt (0)) e,  env, (TakeH e): k)
 
   
-eval (TmTake e1 e2, env, k) 
-                            | (isValue e1) == False && (isValue e2) == False  = (TmTake (evalLoop e1) (evalLoop e2), env, k)
-                            | (isValue e1) == False    =(TmTake (evalLoop e1) e2, env, k)
-                            | (isValue e2) == False    =(TmTake e1 (evalLoop e2), env, k)
-                            | otherwise                = ((TmTake e1 e2),  env, (HTake e2): k)
+eval (TmTake e1 e2, env,stm, k) 
+                            | (isValue e1) == False && (isValue e2) == False  = (TmTake (evalLoop e1 stm) (evalLoop e2 stm), env,stm, k)
+                            | (isValue e1) == False    =(TmTake (evalLoop e1 stm) e2, env,stm, k)
+                            | (isValue e2) == False    =(TmTake e1 (evalLoop e2 stm), env,stm, k)
+                            | otherwise                = ((TmTake e1 e2),  env,stm, (HTake e2): k)
 
 
-eval (TmTake (TmInt 1) (TmInts n e) , [], []) =(TmInt (n), [], [])
-eval (TmTake (TmInt 1) (TmInt n) , [], []) =(TmInt (n), [], [])
-
-
-
-
-
---eval (TmTake (TmInt 0) (TmInt n) , env, k) = error "wrong arguments"
+eval (TmTake (TmInt 1) (TmInts n e) , [],stm, []) =(TmInt (n), [],stm, [])
+eval (TmTake (TmInt 1) (TmInt n) , [],stm, []) =(TmInt (n), [],stm, [])
 
 
 
--- evaluation rules for repeat
-eval (TmTakeRepeat (TmInt n) e1, env, (HTakeRepeat (TmInt n1):k))
-                                              | n1 <= n      = (TmTakeRepeat (TmInt n) e1, ("Value", evalLoop (TmTake (TmInt n1) e1)):env, (HTakeRepeat (TmInt (n1 + 1)): k))
-                                              | otherwise    = ((getValueFromEnvironment env), env , [])
+eval (TmTakeRepeat (TmInt n) e1, env,stm, (HTakeRepeat (TmInt n1):k))
+                                              | n1 <= n      = (TmTakeRepeat (TmInt n) e1, ("Value", evalLoop (TmTake (TmInt n1) e1) stm):env,stm, (HTakeRepeat (TmInt (n1 + 1)): k))
+                                              | otherwise    = ((getValueFromEnvironment env), env ,stm, [])
 
-eval (TmTakeRepeat (TmInt n) e1, env, k) = (TmTakeRepeat (TmInt n) e1, env, (HTakeRepeat (TmInt 1):k))
-
+eval (TmTakeRepeat (TmInt n) e1, env,stm, k) = (TmTakeRepeat (TmInt n) e1, env,stm, (HTakeRepeat (TmInt 1):k))
 
 
-eval (TmTakeRepeat e1 e2, env, k) 
-                            | (isValue e1) == False && (isValue e2) == False  = (TmTakeRepeat (evalLoop e1) (evalLoop e2), env, k)
-                            | (isValue e1) == False    =(TmTakeRepeat (evalLoop e1) e2, env, k)
-                            | (isValue e2) == False    =(TmTakeRepeat e1 (evalLoop e2), env, k)
-                            | otherwise                = ((TmTakeRepeat e1 e2),  env, (HTakeRepeat e2): k)
 
---TmSumLists (TmTakeRepeat (TmLength (TmInts 1 (TmInts 2 (TmInts 3 (TmInt 4))))) (TmInts 1 (TmInts 2 (TmInts 3 (TmInt 4)))))
+eval (TmTakeRepeat e1 e2, env,stm, k) 
+                            | (isValue e1) == False && (isValue e2) == False  = (TmTakeRepeat (evalLoop e1 stm) (evalLoop e2 stm), env,stm, k)
+                            | (isValue e1) == False    =(TmTakeRepeat (evalLoop e1 stm) e2, env,stm, k)
+                            | (isValue e2) == False    =(TmTakeRepeat e1 (evalLoop e2 stm), env,stm, k)
+                            | otherwise                = ((TmTakeRepeat e1 e2),  env,stm, (HTakeRepeat e2): k)
+
+
 
 -- Evaluation rules for map
-eval (TmMap (TmLambda x typ e1) (TmInts n1 e), env, (HMap (TmInts n2 e2):k)) = (TmMap (TmLambda x typ e1) e, env ++ [("Value", (evalLoop (TmApp (TmLambda x typ e1) (TmInt n1))))] , (HMap e):k)
-eval (TmMap (TmLambda x typ e1) (TmInt n1), env, (HMap (TmInt n2):k)) = (TmMap (TmInt n1) (TmInt n1), env ++ [("Value", (evalLoop (TmApp (TmLambda x typ e1) (TmInt n1))))], (MapH e1) : k)
-eval (TmMap (TmInt n) (TmInt n1), env, (MapH e1) : k) = (getValueFromEnvironment env, env, [])
-eval (TmMap (TmLambda x typ e1) expr, env, k) = (TmMap (TmLambda x typ e1) expr, env, (HMap expr):k )
+eval (TmMap (TmLambda x typ e1) (TmInts n1 e), env, input, (HMap (TmInts n2 e2):k)) = (TmMap (TmLambda x typ e1) e, env ++ [("Value", (evalLoop (TmApp (TmLambda x typ e1) (TmInt n1)) input))] , input, (HMap e):k)
+eval (TmMap (TmLambda x typ e1) (TmInt n1), env, input, (HMap (TmInt n2):k)) = (TmMap (TmInt n1) (TmInt n1), env ++ [("Value", (evalLoop (TmApp (TmLambda x typ e1) (TmInt n1)) input))], input, (MapH e1) : k)
+eval (TmMap (TmInt n) (TmInt n1), env, input, (MapH e1) : k) = (getValueFromEnvironment env, env, input, [])
+eval (TmMap (TmLambda x typ e1) expr, env,input, k) = (TmMap (TmLambda x typ e1) (evalLoop expr input), env,input, (HMap expr):k )
 
--- eval (TmMap TmSum (TmLine e1 e2), env, k) = (TmMap e1 e2, (evalLoop (e1)))
 
--- map (( \(x : Int) x * 3)) 1,2
--- ( \ (x : Int) (if (( \(x : Int) true ) 4 ) then x else x + 1)) 7
 
 -- Evaluation rules for reverse
--- TmLine (TmInts 5 (TmInts 4 (TmInts 3 (TmInts 2 (TmInt 1))))) (TmLine (TmInts 4 (TmInts 3 (TmInts 2 (TmInt 1)))) (TmLine (TmInts 3 (TmInts 2 (TmInt 1))) (TmLine (TmInts 2 (TmInt 1)) (TmInt 1))))
-
-eval (TmReverseLists (TmLine (TmInts n e) e1), env, k) = (TmReverseLists e1, env ++ [("Value", evalLoop (TmReverse (TmInts n e)))], (HReverseLists e1):k )
-eval (TmReverseLists (TmInts n e), env, (HReverseLists e1):k) = (TmReverseLists (TmInt 0), env ++ [("Value", evalLoop (TmReverse (TmInts n e)))], (ReverseListsH (TmInt 0)):k)
-eval (TmReverseLists (TmInt n), env, (HReverseLists e1):k) = (TmReverseLists (TmInt 0), env ++ [("Value", TmInt n)], (ReverseListsH (TmInt 0)):k)
-eval (TmReverseLists (TmInt 0), env, (ReverseListsH e1):k) = ((getValueFromEnvironment (env)), [], [])
-eval ((TmReverseLists(e),env,k)) = (TmReverseLists((evalLoop e)),env,k)
+eval (TmReverseLists (TmLine (TmInts n e) e1), env,stm, k) = (TmReverseLists e1, env ++ [("Value", evalLoop (TmReverse (TmInts n e)) stm)],stm, (HReverseLists e1):k )
+eval (TmReverseLists (TmInts n e), env,stm, (HReverseLists e1):k) = (TmReverseLists (TmInt 0), env ++ [("Value", evalLoop (TmReverse (TmInts n e)) stm)],stm, (ReverseListsH (TmInt 0)):k)
+eval (TmReverseLists (TmInt n), env,stm, (HReverseLists e1):k) = (TmReverseLists (TmInt 0), env ++ [("Value", TmInt n)],stm, (ReverseListsH (TmInt 0)):k)
+eval (TmReverseLists (TmInt 0), env,stm, (ReverseListsH e1):k) = ((getValueFromEnvironment (env)), [],stm, [])
+eval ((TmReverseLists(e),env,stm,k)) = (TmReverseLists((evalLoop e stm)),env,stm,k)
 
 
-eval (TmReverse (TmInts n e), env, (HReverse (TmInt n1)):k) = (TmReverse (e), ("Value", (TmInt n )): env, HReverse (TmInt n):k)
+eval (TmReverse (TmInts n e), env,stm, (HReverse (TmInt n1)):k) = (TmReverse (e), ("Value", (TmInt n )): env,stm, HReverse (TmInt n):k)
 
-eval (TmReverse (TmInt n) , env, (HReverse (TmInt n1)):k) = (TmReverse (TmInt n), ("Value", (TmInt n)) : env, ReverseH (TmInt n):k)
+eval (TmReverse (TmInt n) , env,stm, (HReverse (TmInt n1)):k) = (TmReverse (TmInt n), ("Value", (TmInt n)) : env,stm, ReverseH (TmInt n):k)
 
-eval (TmReverse (TmInt n ), env , (ReverseH (TmInt n1)):k) = ((getValueFromEnvironment(env)) , [], [])
+eval (TmReverse (TmInt n ), env ,stm, (ReverseH (TmInt n1)):k) = ((getValueFromEnvironment(env)) , [],stm, [])
 
-eval (TmReverse (TmInts n e), env, k) = (TmReverse (e), ("Value", (TmInt n)) : env,  HReverse (TmInt n): k)
+eval (TmReverse (TmInts n e), env,stm, k) = (TmReverse (e), ("Value", (TmInt n)) : env,stm,  HReverse (TmInt n): k)
 
-eval ((TmReverse(e),env,k)) = (TmReverse((evalLoop e)),env,k)
-
-
+eval ((TmReverse(e),env,stm,k)) = (TmReverse((evalLoop e stm)),env,stm,k)
 
 -- evaluation rules for lists arithmetic
-eval (TmListsArith (TmLambda x typ e1) (TmLine e2 e3), env, k) | (isValue e2) == False && (isValue e3) == False  = eval (TmListsArith (TmLambda x typ e1) (TmLine (evalLoop e2) (evalLoop e3)), env, k)
-                                                      | (isValue e2) == False    = eval (TmListsArith (TmLambda x typ e1) (TmLine (evalLoop e2) e3), env, k)
-                                                      | (isValue e3) == False    = eval (TmListsArith (TmLambda x typ e1) (TmLine (e2) (evalLoop e3)), env, k)
+eval (TmListsArith (TmLambda x typ e1) (TmLine e2 e3), env, input, k) | (isValue e2) == False && (isValue e3) == False  = eval (TmListsArith (TmLambda x typ e1) (TmLine (evalLoop e2 input) (evalLoop e3 input)), env, input, k)
+                                                      | (isValue e2) == False    = eval (TmListsArith (TmLambda x typ e1) (TmLine (evalLoop e2 input) e3), env, input, k)
+                                                      | (isValue e3) == False    = eval (TmListsArith (TmLambda x typ e1) (TmLine (e2) (evalLoop e3 input)), env,input,  k)
 
-eval (TmListsArith (TmLambda x typ e1) (TmLine (TmInts n1 e2)  (TmInts n2 e3)), env, (HListArith e4):k) = (TmListsArith (TmLambda x typ e1) (TmLine e2 e3), ("Value", evalLoop (TmApp (TmApp (TmLambda x typ e1) (TmInt n1)) (TmInt n2))) : env, (HListArith (TmLine e2 e3)) :k)
-eval (TmListsArith (TmLambda x typ e1) (TmLine (TmInt n1)  (TmInt n2)), env, (HListArith e2):k) = (TmListsArith (TmLambda x typ e1) (TmInt 1), ("Value", evalLoop (TmApp (TmApp (TmLambda x typ e1)  (TmInt n1)) (TmInt n2))) :env, (ListArithH e2):k)
-eval (TmListsArith (TmLambda x typ e1) e2, env, (ListArithH e3):k) = (getValueFromEnvironment env, env, [])
-eval (TmListsArith (TmLambda x typ e1) (TmLine e2 e3), env, k) = (TmListsArith (TmLambda x typ e1) (TmLine e2 e3), env, (HListArith (TmLine e2 e3) :k))
+eval (TmListsArith (TmLambda x typ e1) (TmLine (TmInts n1 e2)  (TmInts n2 e3)), env, input, (HListArith e4):k) = (TmListsArith (TmLambda x typ e1) (TmLine e2 e3), ("Value", (evalLoop (TmApp (TmApp (TmLambda x typ e1) (TmInt n1)) (TmInt n2)) input)) : env, input, (HListArith (TmLine e2 e3)) :k)
+eval (TmListsArith (TmLambda x typ e1) (TmLine (TmInt n1)  (TmInt n2)), env, input, (HListArith e2):k) = (TmListsArith (TmLambda x typ e1) (TmInt 1), ("Value", (evalLoop (TmApp (TmApp (TmLambda x typ e1)  (TmInt n1)) (TmInt n2)) input)) :env, input, (ListArithH e2):k)
+eval (TmListsArith (TmLambda x typ e1) e2, env, input, (ListArithH e3):k) = (getValueFromEnvironment env, env, input, [])
+eval (TmListsArith (TmLambda x typ e1) (TmLine e2 e3), env, input, k) = (TmListsArith (TmLambda x typ e1) (TmLine e2 e3), env, input, (HListArith (TmLine e2 e3) :k))
 
 
+-- evaluation rules for listst arithmetic
+eval ((TmGetSequence n),env,stm,k) = (convertList1Token(getSequence stm n),env,stm,k)
 
 -- evaluation rules for sum
-eval (TmSumLists (TmInt n), env, (HSumLists e2):k) =  (TmSumLists (TmInt n) ,env ++ [("Value", evalLoop (TmSum (TmInt n)))], (SumListsH e2):k)
+eval (TmSumLists (TmInt n), env, input, (HSumLists e2):k) =  (TmSumLists (TmInt n) ,env ++ [("Value", (evalLoop (TmSum (TmInt n)) input))], input,(SumListsH e2):k)
 
-eval (TmSumLists (TmLine e1 e2), env, k) = (TmSumLists e2,env ++ [("Value", evalLoop (TmSum e1))], (HSumLists e2):k)
+eval (TmSumLists (TmLine e1 e2), env, input, k) = (TmSumLists e2,env ++ [("Value", (evalLoop (TmSum e1) input))], input, (HSumLists e2):k)
 
-eval (TmSumLists (TmInts n e1), env, (HSumLists e2):k) = (TmSumLists (TmInts n e1) ,env ++ [("Value", evalLoop (TmSum (TmInts n e1)))], (SumListsH e2):k)
+eval (TmSumLists (TmInts n e1), env, input, (HSumLists e2):k) = (TmSumLists (TmInts n e1) ,env ++ [("Value", (evalLoop (TmSum (TmInts n e1)) input))], input, (SumListsH e2):k)
 
-eval (TmSumLists e, env, (SumListsH e2):k) = ((getValueFromEnvironment env), env, [])
+eval (TmSumLists e, env, input, (SumListsH e2):k) = ((getValueFromEnvironment env), env, input, [])
 
-eval (TmSumLists e, env, k) | isValue e == False         = (TmSumLists (evalLoop e), env, k)
+eval (TmSumLists e, env, input, k) | isValue e == False         = (TmSumLists (evalLoop e input), env,input, k)
 
 
-eval (TmSum (TmInt n), [], k) = ((TmInt n) , [], [])
+eval (TmSum (TmInt n), [], input, k) = ((TmInt n) , [], input, [])
 
-eval (TmSum (TmInts n e1), ("Value", TmInt n1):env, (HSum (TmInt n2)):k) = (TmSum (e1), [("Value", (TmInt (n + n1) ))], (HSum (TmInt n)):k)
+eval (TmSum (TmInts n e1), ("Value", TmInt n1):env, input,(HSum (TmInt n2)):k) = (TmSum (e1), [("Value", (TmInt (n + n1) ))], input, (HSum (TmInt n)):k)
 
-eval (TmSum (TmInt n), ("Value", TmInt n1):env, (HSum (TmInt n2):k)) = (TmSum (TmInt (n1 + n)), env, (SumH (TmInt n):k))
+eval (TmSum (TmInt n), ("Value", TmInt n1):env, input, (HSum (TmInt n2):k)) = (TmSum (TmInt (n1 + n)), env, input, (SumH (TmInt n):k))
 
-eval (TmSum (TmInt n), ("Value", (TmInt n1)):env, (SumH e):k) = (TmAdd (TmInt n) (TmInt n1), [], [])
+eval (TmSum (TmInt n), ("Value", (TmInt n1)):env, input, (SumH e):k) = (TmAdd (TmInt n) (TmInt n1), [], input, [])
 
-eval (TmSum (TmInts n e1), env, k) = (TmSum (TmInts n e1), ("Value", TmInt 0):env, (HSum (TmInt 0):k))
+eval (TmSum (TmInts n e1), env, input,k) = (TmSum (TmInts n e1), ("Value", TmInt 0):env, input, (HSum (TmInt 0):k))
 
-eval (TmSum e, env, k) | isValue e == False         = eval (TmSum (evalLoop e), env, k)
+eval (TmSum e, env, input, k) | isValue e == False         = eval (TmSum (evalLoop e input), env, input, k)
 
-eval (TmFibSequence (TmInt 2), env, (HFibSequence (TmInt n1)): (HFibSequence (TmInt n2)) : k ) = ((getValueFromEnvironment env), [], [])
-eval (TmFibSequence (TmInt n), env, (HFibSequence (TmInt n1)): (HFibSequence (TmInt n2)) : k ) = (TmFibSequence (TmInt (n - 1)), env ++ [("Value", TmInt (n1 + n2))], (HFibSequence  (TmInt (n1 + n2))) : (HFibSequence  (TmInt (n1)) : k ))
+eval (TmFibSequence (TmInt 2), env, input, (HFibSequence (TmInt n1)): (HFibSequence (TmInt n2)) : k ) = ((getValueFromEnvironment env), [], input, [])
+eval (TmFibSequence (TmInt n), env, input, (HFibSequence (TmInt n1)): (HFibSequence (TmInt n2)) : k ) = (TmFibSequence (TmInt (n - 1)), env ++ [("Value", TmInt (n1 + n2))], input, (HFibSequence  (TmInt (n1 + n2))) : (HFibSequence  (TmInt (n1)) : k ))
 
 
 -- evaluation rules for Fib Sequence
-eval (TmFibSequence (TmInt n) , env, k)
-                        | n == 2           = ((TmInts 1 (TmInt 1)), env, k)
-                        | n == 1           = (TmInt 1, env, k)
-                        | otherwise        = (TmFibSequence (TmInt n), ("Value", TmInt (1)) : ("Value", TmInt (1)) : env, (HFibSequence (TmInt 1)) : (HFibSequence (TmInt 1)) : k)
+eval (TmFibSequence (TmInt n) , env, input, k)
+                        | n == 2           = ((TmInts 1 (TmInt 1)), env, input, k)
+                        | n == 1           = (TmInt 1, env, input, k)
+                        | otherwise        = (TmFibSequence (TmInt n), ("Value", TmInt (1)) : ("Value", TmInt (1)) : env, input, (HFibSequence (TmInt 1)) : (HFibSequence (TmInt 1)) : k)
 
-                             
+eval (TmFibSequence (e) , env,stm, k) = (TmFibSequence (evalLoop e stm) , env,stm, k)                                
 
 -- evaluation rules for zip lines
 
-eval (TmZipLines (TmLambda x typ e1)  (TmLine (TmLine (TmInts n1 e2) e3) (TmLine (TmInts n2 e4) e5)), env, (HZipLines e6 e7): k) = (TmZipLines (TmLambda x typ e1) (TmLine e3 e5),  env ++ [("Value", evalLoop (TmListsArith (TmLambda x typ e1)  (TmLine ((TmInts n1 e2)) (TmInts n2 e4))))] , (HZipLines e3 e5): k)
-eval (TmZipLines (TmLambda x typ e1)  (TmLine (TmInts n1 e2) (TmInts n2 e3)), env, (HZipLines e4 e5): k) = (TmZipLines (TmLambda x typ e1) (TmLine (TmInts n1 e2) (TmInts n2 e3)),   env ++ [("Value", evalLoop (TmListsArith (TmLambda x typ e1)  (TmLine ((TmInts n1 e2)) (TmInts n2 e3))))] , (ZipLinesH (TmInt 0)): k)
-eval (TmZipLines (TmLambda x typ e1)  (TmLine (TmInt n1) (TmInt n2)), env, (HZipLines e4 e5): k) = (TmZipLines (TmLambda x typ e1) (TmLine (TmInt n1) (TmInt n2)),   env ++ [("Value", evalLoop (TmListsArith (TmLambda x typ e1)  (TmLine ((TmInt n1)) (TmInt n2))))], (ZipLinesH (TmInt 0)): k)
-eval (TmZipLines (TmLambda x typ e1)  (TmLine e2 e3), env, (ZipLinesH (TmInt 0)): k) = ((getValueFromEnvironment env), [], [])
-eval (TmZipLines (TmLambda x typ e1)  (TmLine (TmLine (TmInts n1 e2) e3) (TmLine (TmInts n2 e4) e5)), env, k) = (TmZipLines (TmLambda x typ e1) (TmLine e3 e5),  ("Value", evalLoop (TmListsArith (TmLambda x typ e1) (TmLine (TmInts n1 e2) (TmInts n2 e4)))) : env, (HZipLines e3 e5): k)
-eval (TmZipLines (TmLambda x typ e1)  (TmLine e2 e3) , env, k) = (TmZipLines (TmLambda x typ e1)  (TmLine (evalLoop(e2)) (evalLoop(e3))), env, k)
+eval (TmZipLines (TmLambda x typ e1)  (TmLine (TmLine (TmInts n1 e2) e3) (TmLine (TmInts n2 e4) e5)), env, input, (HZipLines e6 e7): k) = (TmZipLines (TmLambda x typ e1) (TmLine e3 e5),  env ++ [("Value", (evalLoop (TmListsArith (TmLambda x typ e1)  (TmLine ((TmInts n1 e2)) (TmInts n2 e4))) input))] , input, (HZipLines e3 e5): k)
+eval (TmZipLines (TmLambda x typ e1)  (TmLine (TmInts n1 e2) (TmInts n2 e3)), env, input, (HZipLines e4 e5): k) = (TmZipLines (TmLambda x typ e1) (TmLine (TmInts n1 e2) (TmInts n2 e3)),   env ++ [("Value", (evalLoop (TmListsArith (TmLambda x typ e1)  (TmLine ((TmInts n1 e2)) (TmInts n2 e3))) input))] , input, (ZipLinesH (TmInt 0)): k)
+eval (TmZipLines (TmLambda x typ e1)  (TmLine (TmInt n1) (TmInt n2)), env, input, (HZipLines e4 e5): k) = (TmZipLines (TmLambda x typ e1) (TmLine (TmInt n1) (TmInt n2)),   env ++ [("Value", (evalLoop (TmListsArith (TmLambda x typ e1)  (TmLine ((TmInt n1)) (TmInt n2))) input))], input, (ZipLinesH (TmInt 0)): k)
+eval (TmZipLines (TmLambda x typ e1)  (TmLine e2 e3), env, input, (ZipLinesH (TmInt 0)): k) = ((getValueFromEnvironment env), [], input, [])
+eval (TmZipLines (TmLambda x typ e1)  (TmLine (TmLine (TmInts n1 e2) e3) (TmLine (TmInts n2 e4) e5)), env, input,  k) = (TmZipLines (TmLambda x typ e1) (TmLine e3 e5),  ("Value", (evalLoop (TmListsArith (TmLambda x typ e1) (TmLine (TmInts n1 e2) (TmInts n2 e4))) input)) : env, input, (HZipLines e3 e5): k)
+eval (TmZipLines (TmLambda x typ e1)  (TmLine e2 e3) , env, input, k) = (TmZipLines (TmLambda x typ e1)  (TmLine (evalLoop(e2) input) (evalLoop (e3) input)), env, input, k)
 
 
 
@@ -352,10 +388,10 @@ duplicateList l1@(TmInts n e) l2@(TmInt m) = duplicateHelper l1 l2
 duplicateList l1@(TmInts n e) l2@(TmInts m e1) = duplicateList (duplicateHelper l1 (TmInt m)) e1
 
 -- Function to iterate the small step reduction to termination
-evalLoop :: Expr -> Expr
-evalLoop e = evalLoop' (e,[],[])
-  where evalLoop' (e,env,k) = if (e' == e) && (isValue e') && k' == [] then e' else evalLoop' (e',env',k')
-                       where (e',env',k') = eval (e,env,k)
+evalLoop :: Expr -> [[Int]] ->  Expr
+evalLoop e input = evalLoop' (e,[], input, [])
+  where evalLoop' (e,env, input ,k) = if (e' == e) && (isValue e') && k' == [] then e' else evalLoop' (e',env', input',k')
+                       where (e',env', input', k') = eval (e,env, input, k)
 
                        
 
@@ -367,25 +403,36 @@ generateInts (TmInts a b) = a : generateInts b
 
 unparse :: Expr -> String
 unparse (TmInt n) = show n
-unparse l@(TmInts x y) = show (generateInts l )
+unparse l@(TmInts x y) = show (transform(generateInts l :[]))
 -- unparse l@(TmLine x y) = map(generateInts) l
 unparse (TmTrue) = "true"
 unparse (TmFalse) = "false"
-unparse (TmLine x y) = show (generateInts x) ++ (unparse y)
+unparse (TmLine x y) = show (transform((generateInts x):(generateInts y):[]))
 unparse _ = "Unknown"
 
 
+getSequence :: [[Int]] -> Int -> [Int]
+getSequence xxs x = [ xs !! x | xs <- xxs, not(null xs)]
 
-parseInput :: IO ()
-parseInput = do
-              let list = []
-              handle <- openFile "input.txt" ReadMode
-              contents <- hGetContents handle
-              let singlewords = lines contents
-              let list = f singlewords
-              --eval1 $ command list
-              hClose handle
+convertList1Token :: [Int] -> Expr
+convertList1Token [x] = TmInt x
+convertList1Token (x:xs) = TmInts (x) (convertList1Token (xs))
 
-f :: [String] -> [[Int]]
-f [] = []
-f (x:xs) = (map read $ words x :: [Int]) : f xs
+
+transform:: [[a]]->[[a]]
+transform ([]:_) = []
+transform x = (map head x) : transform (map tail x)
+
+-- parseInput :: IO ()
+-- parseInput = do
+--               let list = []
+--               handle <- openFile "input.txt" ReadMode
+--               contents <- hGetContents handle
+--               let singlewords = lines contents
+--               let list = f singlewords
+--               --eval1 $ command list
+--               hClose handle
+
+-- f :: [String] -> [[Int]]
+-- f [] = []
+-- f (x:xs) = (map read $ words x :: [Int]) : f xs

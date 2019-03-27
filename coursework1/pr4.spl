@@ -1,4 +1,1 @@
-begin
--- QUESTION FOURS
-  reverse (sumLists (takeRepeat 4 1,2,3,4))
-end
+reverse (sumLists (takeRepeat (length getSequence 0) getSequence 0))
