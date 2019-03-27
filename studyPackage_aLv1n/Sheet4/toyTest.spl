@@ -1,0 +1,19 @@
+if true then 3 else 2
+Parsing : if true then 3 else 2
+Parsed as TmIf TmTrue (TmInt 3) (TmInt 2)
+
+Type Checking : TmIf TmTrue (TmInt 3) (TmInt 2)
+
+Type Checking Passed with type Int
+
+Evaluates to 3
+
+
+Parsing : 3 + 3
+Parsed as TmAdd (TmInt 3) (TmInt 3)
+
+Type Checking : TmAdd (TmInt 3) (TmInt 3)
+
+Type Checking Passed with type Int
+
+Evaluates to 3

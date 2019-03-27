@@ -9,6 +9,9 @@ import LexerTokens
 %token
     Bool          {TokenTypeBool _}
     Int           {TokenTypeInt _}
+    Ints          {TokenTypeInts _}
+    Line          {TokenTypeLine _}
+    Lam           {TokenTypeLam _} 
     int           {TokenInt _ $$}
     true          {TokenTrue _}
     false         {TokenFalse _}
@@ -107,7 +110,7 @@ Exp     : begin Exp end                               {TmBody $2}
         | map Exp Exp                                 {TmMap $2 $3}
         | if Exp then Exp else Exp fi                 {TmIf $2 $4 $6}    
         | while Exp Exp                               {TmWhile $2 $3}   
-        | let var '=' Exp                             {TmLet $2 $4}
+        | let '(' var ':' DataType ')' '=' Exp in Exp {TmLet $3 $5 $8 $10}
         | zipLines Exp Exp                            {TmZipLines $2 $3}
         | listsArith Exp Exp                          {TmListsArith $2 $3}
         | length Exp                                  {TmLength $2}
@@ -146,9 +149,12 @@ Exp     : begin Exp end                               {TmBody $2}
 
 -- Text : 
 DataType :: {DataType}
-DataType : Bool            { TyBool }
-         | Int             { TyInt }
-         | DataType arr DataType   { TyFun $1 $3 }
+DataType : Bool                     { TyBool }
+         | Int                      { TyInt }
+         | DataType arr DataType    {TyFun $1 $3 }
+         | Ints                     {TyInts}
+         | Line                     {TyLine}
+         | Lam                      {TyLam}
 
 
 
@@ -162,7 +168,7 @@ type TyEnvironment = [ (String, Expr) ]
 type Environment = [ (String, Expr) ]
 
 
-data DataType =TyBool | TyInt | TyFun DataType DataType
+data DataType =TyBool | TyInt | TyFun DataType DataType | TyInts | TyLine | TyLam
               deriving(Show, Eq)
 
 
@@ -170,7 +176,7 @@ data Expr =  TmInts Int Expr | TmGt Expr Expr | TmLt Expr Expr | TmAdd Expr Expr
             | TmGetStream | TmReverse Expr | TmLength Expr | TmInt Int | TmTrue | TmFalse | TmPush Int Int Expr | TmHead Expr | TmLast Expr 
             | TmSum Expr | TmTake Expr Expr| TmPrint Expr | TmEnd | TmVar String | TmMerge Expr Expr | TmSplitAt Expr Expr | TmDuplicate Expr 
             | TmTakeRepeat Expr Expr | TmSumLists Expr | TmFibSequence Expr |TmLine Expr Expr | TmLambda String DataType Expr |  TmApp Expr Expr 
-            | Cl String DataType Expr Environment | TmBody Expr  | TmIf Expr Expr Expr | TmWhile Expr Expr | TmLet String Expr | TmZipLines Expr Expr 
+            | Cl String DataType Expr Environment | TmBody Expr  | TmIf Expr Expr Expr | TmWhile Expr Expr | TmLet String DataType Expr Expr | TmZipLines Expr Expr 
             | TmMap Expr Expr | TmListsArith Expr Expr | TmReverseLists Expr | Negate Expr 
             deriving (Show, Eq)
 

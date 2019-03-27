@@ -6,7 +6,7 @@ import Control.Monad
 
 data Frame = HBody Expr | BodyH Expr Environment
            | HPrint Expr | PrintH Expr Environment
-           | HLet String Environment
+           | HLet String DataType Expr 
            | HAddL Expr | AddLH Expr Environment
            | HLength Expr | LengthH Expr Environment
            | HAdd Expr | AddH Expr Environment
@@ -79,6 +79,8 @@ eval ((TmVar x), env, k) = (e', env', k)
                   where (e', env') = getValueBinding x env
 eval (v, env, []) | isValue v   = (v, env, [])
 
+-- Evaluation rules for body
+eval (TmBody e, env, k) = eval (e, env, k)
 
 -- Evaluation rules for negate operator
 eval (Negate (TmInt (n)), env, k) = (TmInt (-n), [], k) 
@@ -132,9 +134,12 @@ eval ((TmPush element index e3), env, k) = ((TmInt index), env, (HPush (TmInt el
 eval ((TmInt n), env1, (HPush (TmInt m) e3 env2):k) = ((TmInts (m) e3), env2, k)
 
 
--- Evaluation rules for let
-eval ((TmLet x e1),env,k) = (e1,env,(HLet x env):k)
-eval (v,env1,(HLet x env2):k) | isValue v = (v, env2, k)
+
+-- Evaluation rules for Let blocks
+eval ((TmLet x typ e1 e2),env,k) = (e1,env,(HLet x typ e2):k)
+eval (v,env,(HLet x typ e):k) | isValue v = (e, update env x v , k)
+
+
 
 -- closure property for lambda
 eval((TmLambda x typ e), env, k) = ((Cl x typ e env), [], k)
@@ -352,6 +357,7 @@ evalLoop e = evalLoop' (e,[],[])
   where evalLoop' (e,env,k) = if (e' == e) && (isValue e') && k' == [] then e' else evalLoop' (e',env',k')
                        where (e',env',k') = eval (e,env,k)
 
+                       
 
 
 generateInts :: Expr -> [Int]

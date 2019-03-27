@@ -15,7 +15,10 @@ tokens :-
 $white+       ;
   "--".*        ;
   Bool                      { tok (\p s -> TokenTypeBool p)}
+  Ints                      { tok (\p s -> TokenTypeInts p)}
   Int                       { tok (\p s -> TokenTypeInt p)}
+  Line                      { tok (\p s -> TokenTypeLine p)}
+  Lam                       { tok (\p s -> TokenTypeLam p)}
   $digit+                   { tok (\p s -> TokenInt p (read s)) }
   true                      { tok (\p s -> TokenTrue p)}
   false                     { tok (\p s -> TokenFalse p)}
@@ -29,7 +32,6 @@ $white+       ;
   \<                        { tok (\p s -> TokenLT p)}
   \>                        { tok (\p s -> TokenGT p)}
    :                        { tok (\p s -> TokenCol p)}
-  let                       { tok (\p s -> TokenLet p )}
   =                         { tok (\p s -> TokenEq p )}
   \(                        { tok (\p s -> TokenLParen p) }
   \)                        { tok (\p s -> TokenRParen p) }
@@ -77,6 +79,9 @@ tok f p s = f p s
 data LexerToken =
   TokenTypeBool       AlexPosn          |
   TokenTypeInt        AlexPosn          |
+  TokenTypeInts       AlexPosn          |
+  TokenTypeLine       AlexPosn          |
+  TokenTypeLam        AlexPosn          |
   TokenInt            AlexPosn Int      |
   TokenTrue           AlexPosn          |
   TokenListsArith     AlexPosn          |
@@ -131,6 +136,9 @@ data LexerToken =
 tokenPosn :: LexerToken -> String
 tokenPosn (TokenTypeBool (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenTypeInt  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenTypeInts (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenTypeLine  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenTypeLam  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenInt  (AlexPn a l c) _) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenTrue  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenFalse  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)

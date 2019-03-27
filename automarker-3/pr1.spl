@@ -1,0 +1,1 @@
+reverse (take (length getSequence 0) (push 0 0 getSequence 0))
