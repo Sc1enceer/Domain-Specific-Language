@@ -39,10 +39,10 @@ main' = do (fileName : _ ) <- getArgs
                                 let parsedProg = parseCalc (alexScanTokens sourceText)
                                 --putStrLn ("Parsed as " ++ (show parsedProg))           
                                 --putStrLn ("Type Checking : " ++ (show parsedProg) ++ "\n")
-                                --let typedProg = typeOf [] parsedProg
-                                -- putStrLn ("Type Checking Passed with type " ++ (unparseType typedProg) ++ "\n") 
+                                let typedProg = typeOf [] parsedProg
+                                --putStrLn ("Type Checking Passed with type " ++ (unparseType typedProg) ++ "\n") 
                                 let result = evalLoop (parsedProg) (list)
-                                putStrLn ("evaluate to as " ++ (show result))
+                                --putStrLn ("evaluate to as " ++ (show result))
 
                                 -- sequence_ $ convertToPrint((read(unparse result))::[[Int]]) >>= (\x -> [putStrLn x])
                                 --show (unparse result)
