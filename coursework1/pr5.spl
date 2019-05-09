@@ -1,1 +1,0 @@
-reverse (sumLists (zipLines (\(x :Int) \(y:Int) x * y )   ((takeRepeat (length getSequence 0) (getSequence 0)) ;   (reverseLists (takeRepeat (length getSequence 0) (fibSequence (length getSequence 0)))))))

@@ -1,0 +1,6 @@
+-- ((getSequence 0);(take (length (getSequence 0)) (push 0 0 getSequence 0)))
+--push 0 ((length getSequence 0) + 1 ) (duplicate getSequence 0)
+-- push 0 (length (getSeuqence 0)) getSequence 0
+-- getSequence 0 ; getSequence 0
+
+getSequence 0 ; 1,2,3

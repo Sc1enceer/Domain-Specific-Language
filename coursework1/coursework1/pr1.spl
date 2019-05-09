@@ -1,0 +1,10 @@
+-- use push function to put element 0 in the index position of 0 in the parsed sequence, and take same elements as the input from the output. 
+begin
+    reverse (
+        take ( -- take 2 arguments, the index and a list
+            -- calculate the length of the sequence 0
+            length (getSequence 0)) 
+                -- push element 0 into the head of the list
+                    (push 0 0 (getSequence 0))
+    )
+end

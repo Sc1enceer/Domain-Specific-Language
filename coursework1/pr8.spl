@@ -1,0 +1,6 @@
+-- use push function to put element 0 in the index position of 0 in the parsed sequence, and take same elements as the input from the output. 
+
+
+reverse (
+    (listsArith (\(x :Int) \(y:Int) x + y ) ((getSequence 0) ; reverse ( map (\(x:Int) x) (take (length (getSequence 0)) push 0 0 (getSequence 0)))))
+)

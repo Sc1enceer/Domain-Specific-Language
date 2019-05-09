@@ -1,1 +1,0 @@
-reverse (sumLists (takeRepeat (length getSequence 0) getSequence 0))

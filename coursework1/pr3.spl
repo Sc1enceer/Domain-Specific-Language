@@ -1,3 +1,0 @@
-reverse (listsArith (\(x :Int) \(y:Int) x + y ) ((getSequence 0) ; ( map (\(x:Int) x * 3) (getSequence 1)))) 
-
-

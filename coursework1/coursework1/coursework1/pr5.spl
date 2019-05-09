@@ -1,0 +1,16 @@
+begin
+    -- reverse the list
+    reverse (
+        -- sum Lists will sum all sublists in a list of lists
+        sumLists (
+            -- zip lines take 2 arguments, the first one is lambda expression, the second argument is lists
+        zipLines 
+                (\(x :Int) \(y:Int) x * y ) 
+                    (   -- take repeat take 2 arguments, first one is the number of times stored as an int, the second one is a list
+                        -- TmLine (TmLine) (TmLine)
+                        (takeRepeat (length getSequence 0) (getSequence 0)) ; (reverseLists (takeRepeat (length getSequence 0) (fibSequence (length getSequence 0))))
+                        )
+                )
+        
+    )
+end

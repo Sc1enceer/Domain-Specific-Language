@@ -1,0 +1,2 @@
+(reverse (listsArith (\(x :Int) \(y:Int) x - y ) ((getSequence 0) ; ( map (\(x:Int) x) (getSequence 1))))) ; 
+getSequence 0 

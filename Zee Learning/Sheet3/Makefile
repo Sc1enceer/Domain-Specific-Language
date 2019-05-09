@@ -7,34 +7,30 @@
 #   
 
 # Files that need to be generated from other files
-DEPEND += ToyTokens.hs ToyGrammar.hs ToyEval.hs
+DEPEND += funcortokens.hs funcorgrammar.hs FuncorEval.hs
 
 # When "make" is invoked with no arguments, we build an executable 
 #  after building everything that it depends on
-all: $(DEPEND) Toyi Toy
+all: $(DEPEND) myinterpreter
 
-# Build an executable for Toy interpreter
-Toy: $(DEPEND) Toy.hs
-	ghc Toy.hs
-
-# Build an executable for interactive mode
-Toyi: $(DEPEND) Toyi.hs
-	ghc Toyi.hs
+# Build an executable for Funcor interpreter
+myinterpreter: $(DEPEND) Main.hs
+	ghc -o myinterpreter Main.hs
 
 # Generate ML files from a parser definition file
-ToyGrammar.hs : ToyGrammar.y
-	@rm -f ToyGrammar.hs
-	happy ToyGrammar.y
-	@chmod -w ToyGrammar.hs
+FuncorGrammar.hs : FuncorGrammar.y
+	@rm -f FuncorGrammar.hs
+	happy FuncorGrammar.y
+	@chmod -w FuncorGrammar.hs
 
 # Generate ML files from a lexer definition file
-ToyTokens.hs : ToyTokens.x
-	@rm -f ToyTokens.hs
-	alex ToyTokens.x
-	@chmod -w ToyTokens.hs
+FuncorTokens.hs : FuncorTokens.x
+	@rm -f FuncorTokens.hs
+	alex FuncorTokens.x
+	@chmod -w FuncorTokens.hs
 
 # Clean up the directory
 clean::
-	rm -rf ToyTokens.hs ToyGrammar.hs *.hi *.o *.info
+	rm -rf funcortokens.hs funcorgrammar.hs *.hi *.o *.info myinterpreter
 
 
