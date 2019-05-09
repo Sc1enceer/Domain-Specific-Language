@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-unused-binds -fno-warn-missing-signatures #-}
 {-# LANGUAGE CPP #-}
-{-# LINE 1 "FuncorTokens.x" #-}
+{-# LINE 1 "funcortokens.x" #-}
 
   module FuncorTokens where
 
@@ -31276,7 +31276,7 @@ alex_actions = array (0 :: Int, 190)
   , (0,alex_action_57)
   ]
 
-{-# LINE 77 "FuncorTokens.x" #-}
+{-# LINE 77 "funcortokens.x" #-}
 
 tok f p s = f p s
 

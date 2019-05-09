@@ -8,9 +8,8 @@ begin
                 (\(x :Int) \(y:Int) x * y ) 
                     (   -- take repeat take 2 arguments, first one is the number of times stored as an int, the second one is a list
                         -- TmLine (TmLine) (TmLine)
-                        (takeRepeat (length getSequence 0) (getSequence 0)) ; (reverseLists (takeRepeat (length getSequence 0) (fibSequence (length getSequence 0))))
-                        )
-                )
+                        (takeRepeat (length getSequence 0) (getSequence 0)) ; (reverseLists (takeRepeat (length getSequence 0) (fibSequence (length getSequence 0)))))
+                    )
         
     )
 end

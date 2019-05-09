@@ -6,7 +6,7 @@ import Control.Monad
 
 data Frame = HBody Expr | BodyH Expr Environment
            | HPrint Expr | PrintH Expr Environment
-           | HLet String DataType Expr
+           | HLet String DataType Expr 
            | HAddL Expr | AddLH Expr Environment
            | HLength Expr | LengthH Expr Environment
            | HAdd Expr | AddH Expr Environment
@@ -78,7 +78,7 @@ eval (v, env, input, []) | isValue v   = (v, env, input, [])
 eval (TmBody e, env, input, k) = eval (e, env, input, k)
 
 -- Evaluation rules for negate operator
-eval (Negate (TmInt (n)), env, input, k) = (TmInt (-n), [], input, k)
+eval (Negate (TmInt (n)), env, input, k) = (TmInt (-n), [], input, k) 
 
 -- Evaluation rules for plus operator
 
@@ -179,7 +179,7 @@ eval (TmTake (TmInt 1) (TmInt n), env,stm, (HTake e):k) = (TmTake (TmInt (0)) (T
 
 eval (TmTake (TmInt n1) (TmInts n e), env,stm, (HTake e1):k)
                                             | n1 == 1    = (TmTake (TmInt (n1-1)) e, ("Value", (TmInt n)) : env,stm, TakeH (TmInts n e): k)
-                                            | n1 > 1     =  (TmTake (TmInt (n1-1)) e, ("Value", (TmInt n)) : env,stm, HTake (TmInts n e): k)
+                                            | n1 > 1     =  (TmTake (TmInt (n1-1)) e, ("Value", (TmInt n)) : env,stm, HTake (TmInts n e): k)  
 
 
 
@@ -187,8 +187,8 @@ eval (TmTake (TmInt 0) e2 , env,stm, (TakeH e1):k) =((getValueFromEnvironment(en
                                -- | n1 > 0    = (TmTake (TmInt (n1-1)) e, ("Value", (TmInt n)) : env, (HTake e): k)
                                -- | n1 == 0    = (TmTake (TmInt (0)) e,  env, (TakeH e): k)
 
-
-eval (TmTake e1 e2, env,stm, k)
+  
+eval (TmTake e1 e2, env,stm, k) 
                             | (isValue e1) == False && (isValue e2) == False  = (TmTake (evalLoop e1 stm) (evalLoop e2 stm), env,stm, k)
                             | (isValue e1) == False    =(TmTake (evalLoop e1 stm) e2, env,stm, k)
                             | (isValue e2) == False    =(TmTake e1 (evalLoop e2 stm), env,stm, k)
@@ -208,7 +208,7 @@ eval (TmTakeRepeat (TmInt n) e1, env,stm, k) = (TmTakeRepeat (TmInt n) e1, env,s
 
 
 
-eval (TmTakeRepeat e1 e2, env,stm, k)
+eval (TmTakeRepeat e1 e2, env,stm, k) 
                             | (isValue e1) == False && (isValue e2) == False  = (TmTakeRepeat (evalLoop e1 stm) (evalLoop e2 stm), env,stm, k)
                             | (isValue e1) == False    =(TmTakeRepeat (evalLoop e1 stm) e2, env,stm, k)
                             | (isValue e2) == False    =(TmTakeRepeat e1 (evalLoop e2 stm), env,stm, k)
@@ -290,7 +290,7 @@ eval (TmFibSequence (TmInt n) , env, input, k)
                         | n == 1           = (TmInt 1, env, input, k)
                         | otherwise        = (TmFibSequence (TmInt n), ("Value", TmInt (1)) : ("Value", TmInt (1)) : env, input, (HFibSequence (TmInt 1)) : (HFibSequence (TmInt 1)) : k)
 
-eval (TmFibSequence (e) , env,stm, k) = (TmFibSequence (evalLoop e stm) , env,stm, k)
+eval (TmFibSequence (e) , env,stm, k) = (TmFibSequence (evalLoop e stm) , env,stm, k)                                
 
 -- evaluation rules for zip lines
 
@@ -339,11 +339,11 @@ duplicateList l1@(TmInts n e) l2@(TmInts m e1) = duplicateList (duplicateHelper 
 evalLoop :: Expr -> [[Int]] ->  Expr
 evalLoop e input = case input of
                 [] -> error "The input File is empty"
-                otherwise -> evalLoop' (e,[], input, [])
+                otherwise -> evalLoop' (e,[], input, [])  
   where evalLoop' (e,env, input ,k) = if (e' == e) && (isValue e') && k' == [] then e' else evalLoop' (e',env', input',k')
                        where (e',env', input', k') = eval (e,env, input, k)
 
-
+                       
 
 
 generateInts :: Expr -> [Int]
@@ -372,3 +372,5 @@ convertList1Token (x:xs) = TmInts (x) (convertList1Token (xs))
 transform:: [[a]]->[[a]]
 transform ([]:_) = []
 transform x = (map head x) : transform (map tail x)
+
+

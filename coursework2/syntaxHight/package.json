@@ -1,0 +1,25 @@
+{
+    "name": "ts",
+    "displayName": "packeg",
+    "description": "syntax highlighter",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.33.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "ts",
+            "aliases": ["FuncorSyntax", "ts"],
+            "extensions": [".spl"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "ts",
+            "scopeName": "source.funcorsyntax",
+            "path": "./syntaxes/syntaxHighlight.tmLanguage"
+        }]
+    }
+}

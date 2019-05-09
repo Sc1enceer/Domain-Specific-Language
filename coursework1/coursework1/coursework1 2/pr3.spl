@@ -1,0 +1,12 @@
+begin
+    reverse (    
+        listsArith 
+            -- lambda expression
+            (\(x :Int) \(y:Int) x + y ) 
+                (
+                -- each element in sequence 0 will add each element (*3) in sequence 1
+                    (getSequence 0) ; ( map (\(x:Int) x * 3) (getSequence 1))
+                )
+    ) 
+end
+

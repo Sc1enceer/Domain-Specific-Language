@@ -1,0 +1,8 @@
+begin
+    -- duplicate the input sequence, and split the duplicated sequence into 2 sequences
+    splitAt 
+        -- find the length of the duplicated sequence 0
+        ((length (duplicate (getSequence 0)))/2) 
+        -- duplcate the sequence 0
+        (duplicate getSequence 0)
+end
